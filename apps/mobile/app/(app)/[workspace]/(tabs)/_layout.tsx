@@ -47,6 +47,12 @@ import {
   useChatUnreadMessageCount,
 } from "@/lib/unread-counts";
 import { MoreTabDropdownAnchor } from "@/components/nav/more-tab-dropdown";
+import {
+  formatTabBadge,
+  TAB_BADGES,
+  TAB_ICONS,
+  TAB_TITLES,
+} from "@/lib/tab-config";
 
 // Only override backgroundColor — @react-navigation/elements Badge internally
 // sets borderRadius = size/2, height = size, minWidth = size, so a single
@@ -65,12 +71,11 @@ export default function TabsLayout() {
   const inboxUnread = useInboxUnreadCount(wsId);
   const chatUnread = useChatUnreadMessageCount(wsId);
 
-  // Truncation aligned with web's sidebar badges: 99+ for both. `undefined`
-  // makes React Navigation hide the badge, so zero-count is a free no-op.
-  const inboxBadge =
-    inboxUnread > 0 ? (inboxUnread > 99 ? "99+" : String(inboxUnread)) : undefined;
-  const chatBadge =
-    chatUnread > 0 ? (chatUnread > 99 ? "99+" : String(chatUnread)) : undefined;
+  // Truncation aligned with web's sidebar badges: 99+ for both (see
+  // lib/tab-config.ts formatTabBadge). `undefined` makes React Navigation
+  // hide the badge, so zero-count is a free no-op.
+  const inboxBadge = formatTabBadge(inboxUnread);
+  const chatBadge = formatTabBadge(chatUnread);
 
   // Imperative handle into the More tab's dropdown — listeners.tabPress
   // calls .open(); the @rn-primitives Trigger measures itself inside
@@ -92,12 +97,12 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="inbox"
           options={{
-            title: "首页",
-            tabBarBadge: inboxBadge,
+            title: TAB_TITLES.inbox,
+            tabBarBadge: TAB_BADGES.inbox ? inboxBadge : undefined,
             tabBarBadgeStyle: BADGE_STYLE,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:house.fill" : "sf:house"}
+                source={focused ? TAB_ICONS.inbox.focused : TAB_ICONS.inbox.unfocused}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
@@ -108,10 +113,14 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="my-issues"
           options={{
-            title: "看板",
+            title: TAB_TITLES["my-issues"],
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:square.grid.2x2.fill" : "sf:square.grid.2x2"}
+                source={
+                  focused
+                    ? TAB_ICONS["my-issues"].focused
+                    : TAB_ICONS["my-issues"].unfocused
+                }
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
@@ -124,7 +133,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="voice"
           options={{
-            title: "录音",
+            title: TAB_TITLES.voice,
             tabBarIcon: ({ size, focused }) => (
               <View
                 style={{
@@ -137,7 +146,7 @@ export default function TabsLayout() {
                 }}
               >
                 <Image
-                  source={focused ? "sf:mic.fill" : "sf:mic"}
+                  source={focused ? TAB_ICONS.voice.focused : TAB_ICONS.voice.unfocused}
                   tintColor={t.brandForeground}
                   style={{ width: size * 0.7, height: size * 0.7 }}
                 />
@@ -156,12 +165,12 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="chat"
           options={{
-            title: "工作台",
-            tabBarBadge: chatBadge,
+            title: TAB_TITLES.chat,
+            tabBarBadge: TAB_BADGES.chat ? chatBadge : undefined,
             tabBarBadgeStyle: BADGE_STYLE,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:person.2.wave.2.fill" : "sf:person.2.wave.2"}
+                source={focused ? TAB_ICONS.chat.focused : TAB_ICONS.chat.unfocused}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
@@ -172,10 +181,10 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="more"
           options={{
-            title: "我的",
+            title: TAB_TITLES.more,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:person.fill" : "sf:person"}
+                source={focused ? TAB_ICONS.more.focused : TAB_ICONS.more.unfocused}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
