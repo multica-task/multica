@@ -138,8 +138,8 @@ export default function WorkspaceLayout() {
         <Stack.Screen
           name="inbox"
           options={{
-            title: "Inbox",
-            headerBackTitle: "Back",
+            title: "收件箱",
+            headerBackTitle: "返回",
           }}
         />
         <Stack.Screen
