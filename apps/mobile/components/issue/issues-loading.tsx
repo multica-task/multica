@@ -1,5 +1,5 @@
 /**
- * Loading skeleton for issue-list surfaces — My Issues (`(tabs)/my-issues.tsx`)
+ * Loading skeleton for issue-list surfaces — My Issues (`my-issues.tsx`)
  * and workspace Issues (`more/issues.tsx`). Both group issues by status via
  * SectionList; this skeleton mirrors that shape so the eye immediately sees
  * a list-like structure instead of a centered spinner. Mirrors the

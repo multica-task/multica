@@ -9,17 +9,17 @@
  * layout together; the tests here assert the collection / order / badge
  * mapping stay stable.
  *
- * File names stay as-is in M1 (chat.tsx → workbench.tsx lands in M4); only
- * titles / icons / order are semantic here.
+ * M1 收敛中的 5 项：首页 / 看板(占位) / ●录音 / 工作台 / 我的。收件箱（M1-1
+ * 迁出底栏）与我的事项（M1-2 迁出底栏）不再是 Tab。More 弹窗（`more`）在
+ * M1-6 收敛为 `mine` 页（COD-34）—— 届时本文件再改名为 `mine`。
  */
-export const TAB_ORDER = ["inbox", "my-issues", "voice", "chat", "more"] as const;
+export const TAB_ORDER = ["home", "board", "voice", "chat", "more"] as const;
 export type TabName = (typeof TAB_ORDER)[number];
 
-/** Semantic tab titles (M1-3, COD-31). The "看板" tab is a board placeholder
- * (M3 real board); "工作台" is the workbench (chat data source until M4). */
+/** Semantic tab titles (M1-3, COD-31 + 收敛). 看板是 M3 真实看板前的占位。 */
 export const TAB_TITLES: Record<TabName, string> = {
-  inbox: "首页",
-  "my-issues": "看板",
+  home: "首页",
+  board: "看板",
   voice: "录音",
   chat: "工作台",
   more: "我的",
@@ -34,8 +34,8 @@ export const TAB_TITLES: Record<TabName, string> = {
  */
 export type TabBadgeKind = "inbox" | "chat" | null;
 export const TAB_BADGES: Record<TabName, TabBadgeKind> = {
-  inbox: "inbox",
-  "my-issues": null,
+  home: "inbox",
+  board: null,
   voice: null,
   chat: "chat",
   more: null,
@@ -43,8 +43,8 @@ export const TAB_BADGES: Record<TabName, TabBadgeKind> = {
 
 /** SF Symbol icon per tab, focused vs unfocused variant. */
 export const TAB_ICONS: Record<TabName, { focused: string; unfocused: string }> = {
-  inbox: { focused: "sf:house.fill", unfocused: "sf:house" },
-  "my-issues": { focused: "sf:square.grid.2x2.fill", unfocused: "sf:square.grid.2x2" },
+  home: { focused: "sf:house.fill", unfocused: "sf:house" },
+  board: { focused: "sf:square.grid.2x2.fill", unfocused: "sf:square.grid.2x2" },
   voice: { focused: "sf:mic.fill", unfocused: "sf:mic" },
   chat: { focused: "sf:person.2.wave.2.fill", unfocused: "sf:person.2.wave.2" },
   more: { focused: "sf:person.fill", unfocused: "sf:person" },

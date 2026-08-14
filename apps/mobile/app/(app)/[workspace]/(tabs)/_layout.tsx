@@ -5,9 +5,10 @@
  * supports `listeners.tabPress + e.preventDefault()`, the canonical RN
  * pattern for tab-as-action.
  *
- * 5-Tab 语义（PRD §3.1 / `01-tab-ia` 原型）：
+ * 5-Tab 语义（PRD §3.1 / `01-tab-ia` 原型，M1 收敛中）：
  *   1. 首页   — `home.tsx`（Today dashboard，`house` 图标 + 收件箱未读 badge）
- *   2. 看板   — `my-issues.tsx`（我的事项数据源，`square.grid.2x2` 图标）
+ *   2. 看板   — `board.tsx`（M3 真实看板前的占位，`square.grid.2x2` 图标；
+ *              原 my-issues 已随 M1-2 迁出底栏）
  *   3. ● 中央按钮 — `voice.tsx`（录音，不导航：`tabPress` 一律
  *                 `preventDefault()`，录音/翻译/长按发语音等交互在
  *                 COD-35（M1-7）接入）
@@ -101,12 +102,12 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            title: "首页",
-            tabBarBadge: inboxBadge,
+            title: TAB_TITLES.home,
+            tabBarBadge: TAB_BADGES.home ? inboxBadge : undefined,
             tabBarBadgeStyle: BADGE_STYLE,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:house.fill" : "sf:house"}
+                source={focused ? TAB_ICONS.home.focused : TAB_ICONS.home.unfocused}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
@@ -118,16 +119,18 @@ export default function TabsLayout() {
             M1 gate's four badges — tab badge / home bell / quick-entry
             tile / mine-page row — all fed by the same `useInboxUnreadCount`
             hook (deduplicateInboxItems, same rule as web). */}
+        {/* 看板 — M3 真实看板落地前的占位 Tab，保住 5-Tab 底栏（§3.1「2+1+2」）。
+            原 my-issues Tab 已随 M1-2 迁出底栏（COD-30）。 */}
         <Tabs.Screen
-          name="my-issues"
+          name="board"
           options={{
-            title: TAB_TITLES["my-issues"],
+            title: TAB_TITLES.board,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
                 source={
                   focused
-                    ? TAB_ICONS["my-issues"].focused
-                    : TAB_ICONS["my-issues"].unfocused
+                    ? TAB_ICONS.board.focused
+                    : TAB_ICONS.board.unfocused
                 }
                 tintColor={color}
                 style={{ width: size, height: size }}

@@ -3,7 +3,7 @@
  * tapped. Mounted as a sibling to the Tabs view, NOT as the tab button
  * itself: that way the real More tab button stays a standard React
  * Navigation `PlatformPressable` (icon + "More" label, full visual
- * parity with Inbox / My Issues / Chat).
+ * parity with Inbox / Chat).
  *
  * The wrapper View is absolute-positioned over the More tab's screen
  * rect (right 25%, bottom = safe-area, height = tab bar). It uses
@@ -74,6 +74,9 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  // My Issues moved out of the tab bar (M1-2, COD-30) — surfaced here as a
+  // push to `/{slug}/my-issues` until the Mine page (M1-6) adds its own row.
+  { label: "My Issues", icon: "checklist", path: "/my-issues" },
   { label: "Pinned", icon: "pin", path: "/more/pins" },
   { label: "Issues", icon: "list.bullet", path: "/more/issues" },
   { label: "Projects", icon: "square.stack", path: "/more/projects" },

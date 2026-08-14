@@ -1,6 +1,7 @@
 /**
- * Header utility buttons shared across primary tabs (Inbox / My Issues).
- * Provides two global actions on the right: search and create-issue.
+ * Header utility buttons (search and create-issue) rendered in screen
+ * headers — the Inbox tab root and, since M1-2 (COD-30), the pushed My
+ * Issues route's native `headerRight`.
  *
  * The workspace menu (global nav, workspace switcher, settings) is reached
  * via the "More" tab in the bottom bar.
