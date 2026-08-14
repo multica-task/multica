@@ -3,6 +3,7 @@ import type { Issue } from "@multica/core/types";
 import {
   applyBoardFilters,
   boardFilterHash,
+  boardServerParams,
   groupIssuesByStatus,
   visibleBoardStatuses,
   type BoardFilter,
@@ -144,5 +145,78 @@ describe("groupIssuesByStatus", () => {
     );
     expect(sections).toHaveLength(1);
     expect(sections[0]!.status).toBe("done");
+  });
+});
+
+describe("boardServerParams", () => {
+  it("omits every key when no non-status filter is active", () => {
+    expect(
+      boardServerParams({
+        projectId: null,
+        priorityFilters: [],
+        assigneeFilters: [],
+      }),
+    ).toEqual({});
+  });
+
+  it("maps projectId to project_id when set", () => {
+    expect(
+      boardServerParams({
+        projectId: "p1",
+        priorityFilters: [],
+        assigneeFilters: [],
+      }),
+    ).toEqual({ project_id: "p1" });
+  });
+
+  it("passes priorities through as an array", () => {
+    expect(
+      boardServerParams({
+        projectId: null,
+        priorityFilters: ["high", "urgent"],
+        assigneeFilters: [],
+      }),
+    ).toEqual({ priorities: ["high", "urgent"] });
+  });
+
+  it("passes assignee_filters through as refs", () => {
+    expect(
+      boardServerParams({
+        projectId: null,
+        priorityFilters: [],
+        assigneeFilters: [
+          { type: "member", id: "m1" },
+          { type: "agent", id: "a1" },
+        ],
+      }),
+    ).toEqual({
+      assignee_filters: [
+        { type: "member", id: "m1" },
+        { type: "agent", id: "a1" },
+      ],
+    });
+  });
+
+  it("combines project + priorities + assignees", () => {
+    expect(
+      boardServerParams({
+        projectId: "p1",
+        priorityFilters: ["high"],
+        assigneeFilters: [{ type: "agent", id: "a1" }],
+      }),
+    ).toEqual({
+      project_id: "p1",
+      priorities: ["high"],
+      assignee_filters: [{ type: "agent", id: "a1" }],
+    });
+  });
+
+  it("never serializes status (columns are a render-time concern)", () => {
+    const params = boardServerParams({
+      projectId: "p1",
+      priorityFilters: [],
+      assigneeFilters: [],
+    });
+    expect("status" in params).toBe(false);
   });
 });
