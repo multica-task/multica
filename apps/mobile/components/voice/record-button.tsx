@@ -46,6 +46,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { useWorkspaceStore } from "@/data/workspace-store";
+import { useAssistantStore } from "@/data/stores/assistant-store";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { THEME } from "@/lib/theme";
 import { VOICE_GRADIENT_STOPS } from "@/lib/voice-gradient";
@@ -58,7 +59,11 @@ import { VoiceToast } from "./toast";
 export const DEFAULT_LONG_PRESS_MS = 2000;
 
 export interface RecordButtonProps {
-  /** Hold duration before recording starts. Defaults to 2000ms. */
+  /**
+   * Hold duration before recording starts, in ms. Defaults to the assistant
+   * settings' `holdThresholdSeconds` (PRD §8.4); per-screen callers may
+   * override for prototype testing.
+   */
   longPressMs?: number;
   /**
    * Whether the voice tab is the focused tab. Wired from react-navigation's
@@ -134,12 +139,23 @@ function EqBars() {
 }
 
 export function RecordButton({
-  longPressMs = DEFAULT_LONG_PRESS_MS,
+  longPressMs,
   focused = false,
 }: RecordButtonProps) {
   const { colorScheme } = useColorScheme();
   const t = THEME[colorScheme];
   const slug = useWorkspaceStore((s) => s.currentWorkspaceSlug);
+
+  // 语音偏好（PRD §8.4）：长按阈值取秘书设置页持久化值，prop 可覆盖（原型
+  // 测试用）；「松手后自动跳工作台」关闭时发送成功不跳转。
+  const holdThresholdSeconds = useAssistantStore(
+    (s) => s.voicePrefs.holdThresholdSeconds,
+  );
+  const autoJumpWorkbench = useAssistantStore(
+    (s) => s.voicePrefs.autoJumpWorkbench,
+  );
+  const effectiveLongPressMs =
+    longPressMs ?? holdThresholdSeconds * 1000 ?? DEFAULT_LONG_PRESS_MS;
 
   const { targetAgent, ready, send } = useSendVoiceMessage();
 
@@ -199,7 +215,9 @@ export function RecordButton({
     try {
       const sent = await send();
       if (sent) {
-        navigateToChatTab();
+        // 评审修复（测试评审）：voicePrefs.autoJumpWorkbench=false 时发送
+        // 成功不跳工作台，留在当前页（默认 true，行为不变）。
+        if (autoJumpWorkbench) navigateToChatTab();
       } else if (!ready) {
         // Target data still loading — never misreport a "no employee" that
         // is just a slow fetch.
@@ -216,7 +234,7 @@ export function RecordButton({
       // gesture's onFinalize must not reset it while the await is in flight.
       setPhaseSafe("idle");
     }
-  }, [send, navigateToChatTab, setPhaseSafe, showToast, ready]);
+  }, [send, navigateToChatTab, setPhaseSafe, showToast, ready, autoJumpWorkbench]);
 
   const openVoiceSheet = useCallback(() => {
     if (phaseRef.current !== "idle") return;
@@ -240,7 +258,7 @@ export function RecordButton({
             void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(
               () => {},
             );
-          }, longPressMs);
+          }, effectiveLongPressMs);
         })
         .onEnd((_event, success) => {
           // onEnd fires only on a real finger lift (never on a cancellation),
@@ -273,7 +291,7 @@ export function RecordButton({
     [
       clearPressTimer,
       handleRecordingRelease,
-      longPressMs,
+      effectiveLongPressMs,
       scale,
       setPhaseSafe,
     ],

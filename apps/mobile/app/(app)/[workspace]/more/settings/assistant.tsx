@@ -63,6 +63,7 @@ export default function AssistantSettingsPage() {
   const userId = useAuthStore((s) => s.user?.id);
 
   const hydrate = useAssistantStore((s) => s.hydrate);
+  const hydrated = useAssistantStore((s) => s.hydrated);
   const defaultAgentIds = useAssistantStore((s) => s.defaultAgentIds);
   const voicePrefs = useAssistantStore((s) => s.voicePrefs);
   const setDefaultAgent = useAssistantStore((s) => s.setDefaultAgent);
@@ -74,8 +75,12 @@ export default function AssistantSettingsPage() {
     void hydrate();
   }, [hydrate]);
 
-  const { data: agents = [] } = useQuery(agentListOptions(wsId));
-  const { data: members = [] } = useQuery(memberListOptions(wsId));
+  const { data: agents = [], isFetched: agentsFetched } = useQuery(
+    agentListOptions(wsId),
+  );
+  const { data: members = [], isFetched: membersFetched } = useQuery(
+    memberListOptions(wsId),
+  );
   const memberRole = useMemo(
     () => members.find((m) => m.user_id === userId)?.role,
     [members, userId],
@@ -90,19 +95,28 @@ export default function AssistantSettingsPage() {
     () => visibleStaffAgents(agents, userId, memberRole),
     [agents, userId, memberRole],
   );
-  const staleConfigured = Boolean(
-    configuredId && !visibleAgents.some((a) => a.id === configuredId),
-  );
+
+  // 评审修复（HIGH-1）：stale 判定必须在「store 已 hydrate + agents/members
+  // 已拉取」之后进行 —— 否则 loading 期间 visibleAgents=[] 会把已配置的
+  // 默认员工误判为失效并自动清空（写入 SecureStore 的 null）。
+  const configReady = hydrated && agentsFetched && membersFetched;
+  const staleConfigured =
+    configReady &&
+    Boolean(
+      configuredId && !visibleAgents.some((a) => a.id === configuredId),
+    );
 
   useEffect(() => {
-    if (wsId && staleConfigured && configuredId) {
+    if (configReady && wsId && staleConfigured && configuredId) {
       void setDefaultAgent(wsId, null);
     }
-  }, [wsId, staleConfigured, configuredId, setDefaultAgent]);
+  }, [configReady, wsId, staleConfigured, configuredId, setDefaultAgent]);
 
-  const configuredAgent = staleConfigured
+  const configuredAgent = !configReady
     ? null
-    : agents.find((a) => a.id === configuredId) ?? null;
+    : staleConfigured
+      ? null
+      : agents.find((a) => a.id === configuredId) ?? null;
 
   const goPickDefault = () =>
     wsSlug &&

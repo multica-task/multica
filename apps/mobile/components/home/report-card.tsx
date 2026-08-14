@@ -9,8 +9,8 @@
  *
  * 降级（PRD §4.4 数据源表 + §0.4 A 类数据）：完成/新建/状态分布走客户端
  * 聚合 ✅；运行时长 / Tokens 无数据源 → 环形显示 `——` + 卡片底部 12px 弱色
- * 「部分统计接口未上线」，绝不显示 0。dashboard 探测（`probeDashboardAvailability`）
- * 缓存本次会话判定。
+ * 「部分统计接口未上线」，绝不显示 0。探测与 dashboard 数据层由 M3 看板
+ * （#12 的 `data/queries/dashboard.ts`）承接，M2 本卡只依赖 `/api/issues` 聚合。
  *
  * 交互：周期切换记忆到 `useHomeViewStore`（内存，切工作区清空）；切换 220ms
  * 淡入（对齐 meet-think 手感），内容区固定高度防跳动；「查看完整报告」→
@@ -226,7 +226,8 @@ export function ReportCard() {
     [issuesQuery.data, period],
   );
 
-  // 任一环形缺失（运行时长 / Tokens）→ 卡片底部说明。探测结果驱动文案。
+  // 任一环形缺失（运行时长 / Tokens）→ 卡片底部说明（与探测结果无关，
+  // 纯由聚合结果判定）。
   const degraded = stats.runtimeHours === null || stats.tokens === null;
 
   if (issuesQuery.isLoading) {

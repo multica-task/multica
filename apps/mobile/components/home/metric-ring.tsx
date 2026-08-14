@@ -52,8 +52,18 @@ export function MetricRing({
   const dash = clamped * CIRCUMFERENCE;
   const stroke = color ?? t.mutedForeground;
 
+  // 评审修复（LOW）：环形为纯图形 + 相邻文字，给可访问标签合成「标签 · 数值」。
+  const accessibilityLabel =
+    value !== null
+      ? `${label}，${formatValue(value)}${suffix ? suffix : ""}`
+      : `${label}，暂无数据`;
+
   return (
-    <View className="items-center gap-1 flex-1" accessible>
+    <View
+      className="items-center gap-1 flex-1"
+      accessible
+      accessibilityLabel={accessibilityLabel}
+    >
       <View style={{ width: SIZE, height: SIZE }}>
         <Svg width={SIZE} height={SIZE}>
           {/* 背景环 */}

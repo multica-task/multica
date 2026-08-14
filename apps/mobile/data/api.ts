@@ -455,16 +455,6 @@ class ApiClient {
     });
   }
 
-  // GET /api/dashboard/usage/daily — 首页报告卡 / 看板 Hero 的首选数据源
-  // （PRD §10.2 B-1）。服务端尚未上线且未加入平台 API mirror 白名单时真机
-  // 404。响应体不被 UI 消费 —— 本方法只用来「探测端点是否就绪」，404 抛
-  // ApiError 由调用方整体降级并缓存本次会话判定（PRD §4.4 接口就绪判定）。
-  async probeDashboard(opts?: { signal?: AbortSignal }): Promise<void> {
-    await this.fetch<void>("/api/dashboard/usage/daily", {
-      signal: opts?.signal,
-    });
-  }
-
   // GET /api/briefs — 行业简报（PRD §10.2 B-2 契约）。本期数据源为 mock
   // （`USE_MOCK_BRIEFS=true`，`data/mocks/briefs.ts`），本方法只在开关改
   // `false`、后端上线后才会被调用；契约字段与 BriefSchema 一致。

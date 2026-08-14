@@ -35,8 +35,10 @@ export function listMockBriefs(): Promise<Brief[]> {
   return Promise.resolve(MOCK_BRIEFS);
 }
 
-export function getMockBrief(id: string): Promise<Brief | undefined> {
-  return Promise.resolve(MOCK_BRIEFS.find((b) => b.id === id));
+export function getMockBrief(id: string): Promise<Brief | null> {
+  // 评审修复（LOW）：缺失 id 返回 `null` 而非 `undefined` —— 避免 queryFn
+  // 落到 undefined 被下游误判为错误/未就绪；详情页按 `!brief` 走空态。
+  return Promise.resolve(MOCK_BRIEFS.find((b) => b.id === id) ?? null);
 }
 
 export const briefListOptions = (wsId: string | null) =>

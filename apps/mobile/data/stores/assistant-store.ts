@@ -144,13 +144,19 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
 }));
 
 /** 工作区切换时清空内存中的默认员工映射（不删除 SecureStore —— 换回同一
- *  工作区仍应保留设置）。挂载于 workspace `_layout.tsx`。 */
+ *  工作区仍应保留设置）。挂载于 workspace `_layout.tsx`。
+ *
+ * 评审修复（HIGH-2）：原实现清空 `defaultAgentIds` 但 `hydrated` 保持 true，
+ * 切回原工作区时 `hydrate()` 提前返回、不再重读 SecureStore，默认员工直到
+ * 重启才恢复。现在清空后置 `hydrated: false` 并立即重新 hydrate，换回原
+ * 工作区时下一轮 hydrate 从持久层恢复该工作区设置。 */
 export function useAssistantStoreResetOnWorkspaceChange(wsId: string | null) {
   const prevRef = useRef(wsId);
   useEffect(() => {
     if (prevRef.current !== wsId) {
-      // 仅清空内存镜像，不动持久化。
-      useAssistantStore.setState({ defaultAgentIds: {} });
+      // 仅清空内存镜像，不动持久化；随后重新 hydrate 装载新工作区设置。
+      useAssistantStore.setState({ defaultAgentIds: {}, hydrated: false });
+      void useAssistantStore.getState().hydrate();
       prevRef.current = wsId;
     }
   }, [wsId]);
