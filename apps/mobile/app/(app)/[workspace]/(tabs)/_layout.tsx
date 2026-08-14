@@ -1,17 +1,31 @@
 /**
  * Bottom tab bar — JS `<Tabs>` from expo-router (react-navigation under the
  * hood). We tried NativeTabs first but its `canPreventDefault: false`
- * constraint makes "tap More → open something" impossible. JS Tabs
+ * constraint makes "tap a tab → open something" impossible. JS Tabs
  * supports `listeners.tabPress + e.preventDefault()`, the canonical RN
  * pattern for tab-as-action.
  *
- * The "More" tab is **not a navigation target** — its press opens a
- * DropdownMenu popover anchored above the tab. The popover is rendered
- * by `<MoreTabDropdownAnchor />` as a sibling of `<Tabs>`, NOT as a
- * `tabBarButton` replacement: keeping the real tab button intact means
- * the icon + "More" label render identically to the other three tabs.
- * We just open the dropdown imperatively from `listeners.tabPress` via
- * the exposed `TriggerRef.open()`.
+ * 5-Tab 语义（PRD §3.1 / `01-tab-ia` 原型）：
+ *   1. 首页   — `inbox.tsx`（收件箱数据源，`house` 图标 + 未读 badge）
+ *   2. 看板   — `my-issues.tsx`（我的事项数据源，`square.grid.2x2` 图标）
+ *   3. ● 中央按钮 — `voice.tsx`（录音，不导航：`tabPress` 一律
+ *                 `preventDefault()`，录音/翻译/长按发语音等交互在
+ *                 COD-35（M1-7）接入）
+ *   4. 工作台 — `chat.tsx`（会话数据源，`person.2.wave.2` 图标 + 未读
+ *               badge；文件名在 M4 才改为 `workbench.tsx`）
+ *   5. 我的   — `more.tsx`（`person` 图标；M1 暂保留 More 弹窗能力，
+ *              M1-6 迁入 mine 页后改回普通导航 Tab）
+ *
+ * M1 约定：文件暂不改名，只调整 `Tabs.Screen` 的标题 / 图标 / 顺序。
+ *
+ * The "More" tab is currently **not a navigation target** — its press opens
+ * a DropdownMenu popover anchored above the tab, which doubles as the
+ * interim "我的" page until M1-6 (COD-34) migrates its entries into
+ * `mine.tsx`. The popover is rendered by `<MoreTabDropdownAnchor />` as a
+ * sibling of `<Tabs>`, NOT as a `tabBarButton` replacement: keeping the
+ * real tab button intact means the icon + label render identically to the
+ * other tabs. We just open the dropdown imperatively from
+ * `listeners.tabPress` via the exposed `TriggerRef.open()`.
  *
  * The stub (tabs)/more.tsx file still exists only because expo-router
  * requires every Tabs.Screen to have a backing route file — the press
@@ -74,56 +88,94 @@ export default function TabsLayout() {
           tabBarLabelStyle: { fontSize: 11 },
         }}
       >
+        {/* 首页 — 收件箱未读 badge 保持不变（deduplicateInboxItems → !read）。 */}
         <Tabs.Screen
           name="inbox"
           options={{
-            title: "Inbox",
+            title: "首页",
             tabBarBadge: inboxBadge,
             tabBarBadgeStyle: BADGE_STYLE,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:tray.fill" : "sf:tray"}
+                source={focused ? "sf:house.fill" : "sf:house"}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
             ),
           }}
         />
+        {/* 看板 — 当前仍指向我的事项数据源；整屏看板在 M3 落地。 */}
         <Tabs.Screen
           name="my-issues"
           options={{
-            title: "My Issues",
+            title: "看板",
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:checklist" : "sf:checklist.unchecked"}
+                source={focused ? "sf:square.grid.2x2.fill" : "sf:square.grid.2x2"}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
             ),
           }}
         />
+        {/* ● 中央按钮 — 录音入口。不导航：录音/翻译/长按发语音等交互由
+            COD-35（M1-7）接入；图标暂用品牌色按钮占位，正式 RecordButton
+            视觉（渐变 / 凸起）同步在 COD-35 收口。 */}
+        <Tabs.Screen
+          name="voice"
+          options={{
+            title: "录音",
+            tabBarIcon: ({ size, focused }) => (
+              <View
+                style={{
+                  width: size + 6,
+                  height: size + 6,
+                  borderRadius: (size + 6) / 3,
+                  backgroundColor: t.brand,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Image
+                  source={focused ? "sf:mic.fill" : "sf:mic"}
+                  tintColor={t.brandForeground}
+                  style={{ width: size * 0.7, height: size * 0.7 }}
+                />
+              </View>
+            ),
+          }}
+          listeners={() => ({
+            tabPress: (e) => {
+              // 中央按钮不导航；(tabs)/voice.tsx 保留 Redirect 兜底 deep link。
+              e.preventDefault();
+            },
+          })}
+        />
+        {/* 工作台 — 会话未读 badge 保持不变（countUnreadChatMessages）。
+            文件名 M4 才改 workbench.tsx。 */}
         <Tabs.Screen
           name="chat"
           options={{
-            title: "Chat",
+            title: "工作台",
             tabBarBadge: chatBadge,
             tabBarBadgeStyle: BADGE_STYLE,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? "sf:bubble.left.fill" : "sf:bubble.left"}
+                source={focused ? "sf:person.2.wave.2.fill" : "sf:person.2.wave.2"}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
             ),
           }}
         />
+        {/* 我的 — 暂保留 More 弹窗能力（M1-6 迁入 mine.tsx 后改普通导航）。 */}
         <Tabs.Screen
           name="more"
           options={{
-            title: "More",
-            tabBarIcon: ({ color, size }) => (
+            title: "我的",
+            tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source="sf:ellipsis"
+                source={focused ? "sf:person.fill" : "sf:person"}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
