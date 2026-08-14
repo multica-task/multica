@@ -60,7 +60,9 @@ export default function StaffProfilePage() {
   const { data: agents = [] } = useQuery(agentListOptions(wsId));
   const { data: members = [] } = useQuery(memberListOptions(wsId));
   const { data: runtimes = [] } = useQuery(runtimeListOptions(wsId));
-  const { data: snapshot = [] } = useQuery(agentTaskSnapshotOptions(wsId));
+  const { data: snapshot = [], isFetched: snapshotFetched } = useQuery(
+    agentTaskSnapshotOptions(wsId),
+  );
   const { data: sessions = [] } = useQuery(chatSessionsOptions(wsId));
   // B-9 · 30 天统计。未镜像时 api 落到空数组 → KPI 格显示 `——`。
   const { data: activity = [] } = useQuery(agentActivity30dOptions(wsId));
@@ -83,9 +85,11 @@ export default function StaffProfilePage() {
     [agent, runtimes],
   );
 
+  // 评审修复（LOW）：snapshot 未拉取时传 undefined → CapabilityCountBar 显示
+  // 「——」而非假 0。
   const agentTasks = useMemo(
-    () => snapshot.filter((t) => t.agent_id === id),
-    [snapshot, id],
+    () => (snapshotFetched ? snapshot.filter((t) => t.agent_id === id) : undefined),
+    [snapshot, snapshotFetched, id],
   );
 
   const agentSessions = useMemo(
@@ -116,7 +120,13 @@ export default function StaffProfilePage() {
             inHandTasks={agentTasks}
             canChat={canAssignAgent(agent, userId, memberRole)}
             onChat={() => {
-              if (wsSlug) router.push(`/${wsSlug}/workbench`);
+              if (wsSlug) {
+                // 评审修复（MEDIUM）：带 `agentId` 参数，工作台落地后选中该员工。
+                router.push({
+                  pathname: "/[workspace]/workbench",
+                  params: { workspace: wsSlug, agentId: agent.id },
+                });
+              }
             }}
             onDispatch={() => {
               if (wsSlug) {
@@ -167,7 +177,8 @@ function ProfileHeader({
   agent: Agent;
   memberRole: string | undefined;
   runtimeLabel: string;
-  inHandTasks: readonly AgentTask[];
+  /** snapshot 未拉取时为 undefined → CapabilityCountBar 显示「——」。 */
+  inHandTasks: readonly AgentTask[] | undefined;
   canChat: boolean;
   onChat: () => void;
   onDispatch: () => void;
@@ -295,12 +306,16 @@ function RecordsTab({
   activity: readonly { agent_id: string; bucket_at: string; task_count: number; failed_count: number }[];
   runCounts: readonly { agent_id: string; run_count: number }[];
   agentId: string;
-  tasks: readonly AgentTask[];
+  /** snapshot 未拉取时为 undefined → 绩效相关格显示「——」。 */
+  tasks: readonly AgentTask[] | undefined;
   wsSlug: string | null;
 }) {
   const kpi = useMemo(() => deriveKpi(activity, runCounts, agentId), [activity, runCounts, agentId]);
-  const inHand = tasks.filter((t) => ACTIVE_STATUSES.includes(t.status));
-  const recent = tasks.filter((t) => !ACTIVE_STATUSES.includes(t.status));
+  // snapshot 未拉取时 tasks 为 undefined → 按空数组渲染（KPI 区由 deriveKpi
+  // 在无样本时显示「——」）。
+  const taskList = tasks ?? [];
+  const inHand = taskList.filter((t) => ACTIVE_STATUSES.includes(t.status));
+  const recent = taskList.filter((t) => !ACTIVE_STATUSES.includes(t.status));
   const recentSorted = [...recent].sort((a, b) =>
     (b.completed_at || b.created_at).localeCompare(a.completed_at || a.created_at),
   );

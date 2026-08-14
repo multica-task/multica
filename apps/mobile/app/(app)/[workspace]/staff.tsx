@@ -18,7 +18,7 @@ import { useMemo, useState } from "react";
 import { Pressable, SectionList, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import type { Agent, AgentStatus } from "@multica/core/types";
+import type { Agent, AgentStatus, Squad } from "@multica/core/types";
 import { useAuthStore } from "@/data/auth-store";
 import { useWorkspaceStore } from "@/data/workspace-store";
 import { agentListOptions } from "@/data/queries/agents";
@@ -72,7 +72,9 @@ export default function StaffPage() {
   const { data: agents = [] } = useQuery(agentListOptions(wsId));
   const { data: members = [] } = useQuery(memberListOptions(wsId));
   const { data: runtimes = [] } = useQuery(runtimeListOptions(wsId));
-  const { data: snapshot = [] } = useQuery(agentTaskSnapshotOptions(wsId));
+  const { data: snapshot = [], isFetched: snapshotFetched } = useQuery(
+    agentTaskSnapshotOptions(wsId),
+  );
   const { data: squads = [] } = useQuery(squadListOptions(wsId));
   const [archivedExpanded, setArchivedExpanded] = useState(false);
 
@@ -129,9 +131,12 @@ export default function StaffPage() {
 
   const goChat = (agent: Agent) => {
     if (!wsSlug) return;
-    // 切到工作台该员工会话：跳到工作台 Tab。会话切换由 rail 的选中态处理，
-    // 这里只做跳转（用户落地后点 rail 员工）。
-    router.push(`/${wsSlug}/workbench`);
+    // 评审修复（MEDIUM）：带 `agentId` 路由参数，工作台 rail 落地后直接选中
+    // 该员工并切到其最近会话（rail 选中态读路由参数）。
+    router.push({
+      pathname: "/[workspace]/workbench",
+      params: { workspace: wsSlug, agentId: agent.id },
+    });
   };
 
   return (
@@ -173,7 +178,9 @@ export default function StaffPage() {
             <StaffCard
               agent={item}
               runtimeLabel={runtimeLabel(item, runtimeById)}
-              inHandTasks={snapshot}
+              // 评审修复（LOW）：snapshot 未拉取时传 undefined，CapabilityCountBar
+              // 显示「——」而非假 0。
+              inHandTasks={snapshotFetched ? snapshot : undefined}
               onPress={() => goProfile(item)}
               onChat={() => goChat(item)}
             />
@@ -195,7 +202,7 @@ export default function StaffPage() {
                         {s.name}
                       </Text>
                       <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                        队长 {s.leader_id ? "· " + s.leader_id : ""}
+                        {squadLeaderLabel(s, agents)}
                       </Text>
                     </View>
                   </View>
@@ -207,6 +214,14 @@ export default function StaffPage() {
       )}
     </View>
   );
+}
+
+/** 战队队长展示（评审修复 LOW）：优先解析为员工名，解析不到则脱敏显示
+ *  末 4 位，绝不展示完整 UUID。 */
+function squadLeaderLabel(s: Squad, agents: Agent[]): string {
+  if (!s.leader_id) return "队长 未设置";
+  const leader = agents.find((a) => a.id === s.leader_id);
+  return leader ? `队长 · ${leader.name}` : `队长 · ****${s.leader_id.slice(-4)}`;
 }
 
 function runtimeLabel(
@@ -229,7 +244,8 @@ function StaffCard({
 }: {
   agent: Agent;
   runtimeLabel: string;
-  inHandTasks: readonly import("@multica/core/types").AgentTask[];
+  /** snapshot 未拉取时为 undefined → CapabilityCountBar 显示「——」。 */
+  inHandTasks: readonly import("@multica/core/types").AgentTask[] | undefined;
   onPress: () => void;
   onChat: () => void;
 }) {

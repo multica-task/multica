@@ -12,8 +12,8 @@
  *     pendingTask → POST → patch real ids → seed accepted pending task).
  *
  * Explicitly does NOT navigate — switching to the workbench / focusing the
- * target session is the record button's job (and the `/chat` → `/workbench`
- * path rename lives in M4).
+ * target session is the record button's job (it pushes `/{slug}/workbench`;
+ * chat 已随 M4 重命名为 workbench，COD-41 调用点全量更新）。
  */
 import { useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

@@ -41,7 +41,7 @@ import {
   Platform,
   View,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -107,6 +107,12 @@ export default function WorkbenchTab() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentPickerOpen, setAgentPickerOpen] = useState(false);
+
+  // 「与他对话」等入口经 `/{slug}/workbench?agentId=<id>` 指定要选中的员工
+  // （rail 选中态读路由参数）。到货后按 rail 语义切到该员工最近会话（无则
+  // 置为「新会话」目标），应用后消费参数避免重复。
+  const { agentId: agentIdParam } = useLocalSearchParams<{ agentId?: string }>();
+  const appliedAgentParamRef = useRef<string | null>(null);
 
   // Bridge to the chat-sessions formSheet route. Mirror local
   // activeSessionId into the store so the picker can render the current
@@ -176,6 +182,28 @@ export default function WorkbenchTab() {
     () => sessions.find((s) => s.id === activeSessionId) ?? null,
     [sessions, activeSessionId],
   );
+
+  // ── Route-param agent selection（「与他对话」入口）───────────────────────
+  // agents/sessions 未拉取时先返回，数据到货后 effect 重跑再应用。应用后写
+  // `appliedAgentParamRef` 防重复（重新 push 同一员工或返回本 Tab 时不再
+  // 覆盖用户当前选择）。
+  useEffect(() => {
+    const requested = typeof agentIdParam === "string" ? agentIdParam : null;
+    if (!requested || requested === appliedAgentParamRef.current) return;
+    if (availableAgents.length === 0) return;
+    if (!availableAgents.some((a) => a.id === requested)) return;
+    appliedAgentParamRef.current = requested;
+    const agentSessions = sessions
+      .filter((s) => s.agent_id === requested)
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+    if (agentSessions.length > 0) {
+      setSelectedAgentId(null);
+      setActiveSessionId(agentSessions[0].id);
+    } else {
+      setSelectedAgentId(requested);
+      setActiveSessionId(null);
+    }
+  }, [agentIdParam, availableAgents, sessions]);
 
   // Active agent: explicit selection wins; otherwise inherit from the
   // active session; otherwise pick the first available agent.

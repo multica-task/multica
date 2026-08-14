@@ -197,10 +197,11 @@ export function RecordButton({
   );
 
   const navigateToChatTab = useCallback(() => {
-    // Long-press release lands the user on the chat tab so they see the
-    // message they just sent. M4 renames this path `/chat` → `/workbench`
-    // (PRD §6.1); COD-35 deliberately does NOT touch this navigation.
-    if (slug) router.push(`/${slug}/chat`);
+    // Long-press release lands the user on the workbench tab so they see
+    // the message they just sent (PRD §6.1). M4 renamed the chat tab to
+    // workbench (COD-41) — `/chat` is no longer a route; keeping it here
+    // would send the user to an unmatched screen.
+    if (slug) router.push(`/${slug}/workbench`);
   }, [slug]);
 
   const handleRecordingRelease = useCallback(async () => {

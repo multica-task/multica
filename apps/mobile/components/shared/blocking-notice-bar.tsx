@@ -54,11 +54,18 @@ function useBlockingNotice(agentId?: string): NoticeRow | null {
   const userId = useAuthStore((s) => s.user?.id);
   const isConnected = useNetworkStatus();
 
-  const { data: agents = [] } = useQuery(agentListOptions(wsId));
-  const { data: members = [] } = useQuery(memberListOptions(wsId));
+  const { data: agents = [], isFetched: agentsFetched } = useQuery(
+    agentListOptions(wsId),
+  );
+  const { data: members = [], isFetched: membersFetched } = useQuery(
+    memberListOptions(wsId),
+  );
   const { data: runtimes = [] } = useQuery(runtimeListOptions(wsId));
 
   return useMemo<NoticeRow | null>(() => {
+    // 评审修复（MEDIUM）：agents/members 未拉取前返回 null —— 否则首帧
+    // agents=[] 会让三屏闪现「还没有数字员工」。
+    if (!agentsFetched || !membersFetched) return null;
     const role = members.find((m) => m.user_id === userId)?.role;
     const visible = agents.filter(
       (a) => !a.archived_at && canAssignAgent(a, userId, role),
@@ -89,7 +96,16 @@ function useBlockingNotice(agentId?: string): NoticeRow | null {
     if (isConnected === false) return { kind: "offline", copy: OFFLINE_COPY };
 
     return null;
-  }, [agentId, agents, members, runtimes, userId, isConnected]);
+  }, [
+    agentId,
+    agents,
+    agentsFetched,
+    members,
+    membersFetched,
+    runtimes,
+    userId,
+    isConnected,
+  ]);
 }
 
 /**

@@ -25,6 +25,7 @@ import type {
   AgentRestoredPayload,
   AgentStatusPayload,
 } from "@multica/core/types";
+import type { WSClient } from "@/data/realtime/ws-client";
 
 const agentsKey = (wsId: string | null) => ["agents", wsId] as const;
 
@@ -54,4 +55,38 @@ export function dropArchivedAgentFromList(
   qc.setQueryData(agentsKey(wsId), (old?: unknown[]) =>
     old?.filter((a) => (a as { id: string }).id !== payload.agent.id),
   );
+}
+
+/** Reconnect safety net for the agents list — may have missed create/archived
+ *  while disconnected (评审修复 MEDIUM-4：staff realtime 自己持有重连
+ *  invalidate，不再依赖 presence realtime）。 */
+export function invalidateAgentLists(qc: QueryClient, wsId: string | null) {
+  qc.invalidateQueries({ queryKey: agentsKey(wsId) });
+}
+
+/**
+ * Pure subscription setup for `useStaffRealtime` — extracted so the event →
+ * cache-mutation wiring is unit-testable without rendering React (vitest
+ * lane is Node-only, apps/mobile/vitest.config.ts).
+ *
+ * `agent:*` payloads carry the FULL Agent object, so all four events patch
+ * the agents list in place (≤500ms, zero network); reconnect invalidates as
+ * the missed-events safety net.
+ */
+export function staffRealtimeSubscriptions(
+  qc: QueryClient,
+  ws: WSClient,
+  wsId: string,
+): (() => void)[] {
+  return [
+    ws.on("agent:status", (payload) => upsertAgentInList(qc, wsId, payload)),
+    ws.on("agent:created", (payload) => upsertAgentInList(qc, wsId, payload)),
+    ws.on("agent:archived", (payload) =>
+      dropArchivedAgentFromList(qc, wsId, payload),
+    ),
+    ws.on("agent:restored", (payload) =>
+      upsertAgentInList(qc, wsId, payload),
+    ),
+    ws.onReconnect(() => invalidateAgentLists(qc, wsId)),
+  ];
 }
