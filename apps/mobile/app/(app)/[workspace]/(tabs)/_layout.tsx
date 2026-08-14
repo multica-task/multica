@@ -6,7 +6,7 @@
  * pattern for tab-as-action.
  *
  * 5-Tab 语义（PRD §3.1 / `01-tab-ia` 原型）：
- *   1. 首页   — `inbox.tsx`（收件箱数据源，`house` 图标 + 未读 badge）
+ *   1. 首页   — `home.tsx`（Today dashboard，`house` 图标 + 收件箱未读 badge）
  *   2. 看板   — `my-issues.tsx`（我的事项数据源，`square.grid.2x2` 图标）
  *   3. ● 中央按钮 — `voice.tsx`（录音，不导航：`tabPress` 一律
  *                 `preventDefault()`，录音/翻译/长按发语音等交互在
@@ -46,7 +46,10 @@ import type { TriggerRef } from "@rn-primitives/dropdown-menu";
 import { useWorkspaceStore } from "@/data/workspace-store";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { THEME } from "@/lib/theme";
-import { useChatUnreadMessageCount } from "@/lib/unread-counts";
+import {
+  useInboxUnreadCount,
+  useChatUnreadMessageCount,
+} from "@/lib/unread-counts";
 import { MoreTabDropdownAnchor } from "@/components/nav/more-tab-dropdown";
 import {
   formatTabBadge,
@@ -69,10 +72,12 @@ export default function TabsLayout() {
   const t = THEME[colorScheme];
 
   const wsId = useWorkspaceStore((s) => s.currentWorkspaceId);
+  const inboxUnread = useInboxUnreadCount(wsId);
   const chatUnread = useChatUnreadMessageCount(wsId);
 
   // Truncation aligned with web's sidebar badges: 99+. `undefined` makes
   // React Navigation hide the badge, so zero-count is a free no-op.
+  const inboxBadge = formatTabBadge(inboxUnread);
   const chatBadge = formatTabBadge(chatUnread);
 
   // Imperative handle into the More tab's dropdown — listeners.tabPress
@@ -91,6 +96,23 @@ export default function TabsLayout() {
           tabBarLabelStyle: { fontSize: 11 },
         }}
       >
+        {/* 首页 — 收件箱未读 badge 与铃铛 / 快捷入口 / 我的页角标同源
+            `useInboxUnreadCount`（§4.3 parity 点，四处数字一致）。 */}
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: "首页",
+            tabBarBadge: inboxBadge,
+            tabBarBadgeStyle: BADGE_STYLE,
+            tabBarIcon: ({ color, size, focused }) => (
+              <Image
+                source={focused ? "sf:house.fill" : "sf:house"}
+                tintColor={color}
+                style={{ width: size, height: size }}
+              />
+            ),
+          }}
+        />
         {/* Inbox is no longer a tab — it moved to the pushed route
             `/{slug}/inbox` (M1-1, COD-29). Its unread count re-homes to the
             M1 gate's four badges — tab badge / home bell / quick-entry
