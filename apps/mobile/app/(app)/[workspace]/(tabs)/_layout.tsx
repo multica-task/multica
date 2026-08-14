@@ -5,7 +5,7 @@
  * supports `listeners.tabPress + e.preventDefault()`, the canonical RN
  * pattern for tab-as-action.
  *
- * 5-Tab 语义（PRD §3.1 / `01-tab-ia` 原型，M1 收敛中）：
+ * 5-Tab 语义（PRD §3.1 / `01-tab-ia` 原型，M1 收敛）：
  *   1. 首页   — `home.tsx`（Today dashboard，`house` 图标 + 收件箱未读 badge）
  *   2. 看板   — `board.tsx`（M3 真实看板前的占位，`square.grid.2x2` 图标；
  *              原 my-issues 已随 M1-2 迁出底栏）
@@ -14,8 +14,8 @@
  *                 COD-35（M1-7）接入）
  *   4. 工作台 — `chat.tsx`（会话数据源，`person.2.wave.2` 图标 + 未读
  *               badge；文件名在 M4 才改为 `workbench.tsx`）
- *   5. 我的   — `more.tsx`（`person` 图标；M1 暂保留 More 弹窗能力，
- *              M1-6 迁入 mine 页后改回普通导航 Tab）
+ *   5. 我的   — `mine.tsx`（`person` 图标；M1-6 由 More 弹窗收敛为普通
+ *              导航 Tab，我的页分区重组，COD-34）
  *
  * M1 约定：文件暂不改名，只调整 `Tabs.Screen` 的标题 / 图标 / 顺序。
  *
@@ -23,27 +23,12 @@
  * 其未读计数改为落在 M1 验收关口的四处角标（Tab badge / 首页铃铛 /
  * 快捷入口磁贴 / 我的页角标）—— 见 #4 首页壳与 #6 我的页的消费方。
  *
- * The "More" tab is currently **not a navigation target** — its press opens
- * a DropdownMenu popover anchored above the tab, which doubles as the
- * interim "我的" page until M1-6 (COD-34) migrates its entries into
- * `mine.tsx`. The popover is rendered by `<MoreTabDropdownAnchor />` as a
- * sibling of `<Tabs>`, NOT as a `tabBarButton` replacement: keeping the
- * real tab button intact means the icon + label render identically to the
- * other tabs. We just open the dropdown imperatively from
- * `listeners.tabPress` via the exposed `TriggerRef.open()`.
- *
- * The stub (tabs)/more.tsx file still exists only because expo-router
- * requires every Tabs.Screen to have a backing route file — the press
- * is preventDefault'd so we never actually navigate to it.
- *
  * Active / inactive tint colors are derived from the current colour
  * scheme via THEME so dark mode picks contrasting values automatically.
  */
-import { useRef } from "react";
 import { Tabs } from "expo-router";
 import { Image } from "expo-image";
 import { View } from "react-native";
-import type { TriggerRef } from "@rn-primitives/dropdown-menu";
 import { useWorkspaceStore } from "@/data/workspace-store";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { THEME } from "@/lib/theme";
@@ -51,7 +36,6 @@ import {
   useInboxUnreadCount,
   useChatUnreadMessageCount,
 } from "@/lib/unread-counts";
-import { MoreTabDropdownAnchor } from "@/components/nav/more-tab-dropdown";
 import {
   formatTabBadge,
   TAB_BADGES,
@@ -80,11 +64,6 @@ export default function TabsLayout() {
   // React Navigation hide the badge, so zero-count is a free no-op.
   const inboxBadge = formatTabBadge(inboxUnread);
   const chatBadge = formatTabBadge(chatUnread);
-
-  // Imperative handle into the More tab's dropdown — listeners.tabPress
-  // calls .open(); the @rn-primitives Trigger measures itself inside
-  // open() so the popover anchors to MoreTabDropdownAnchor's rect.
-  const moreTriggerRef = useRef<TriggerRef>(null);
 
   return (
     <View style={{ flex: 1 }}>
@@ -188,33 +167,22 @@ export default function TabsLayout() {
             ),
           }}
         />
-        {/* 我的 — 暂保留 More 弹窗能力（M1-6 迁入 mine.tsx 后改普通导航）。 */}
+        {/* 我的 — 普通导航 Tab，落到 mine.tsx（M1-6，COD-34）。不再走
+            More 弹窗；more-tab-dropdown 已删除。 */}
         <Tabs.Screen
-          name="more"
+          name="mine"
           options={{
-            title: TAB_TITLES.more,
+            title: TAB_TITLES.mine,
             tabBarIcon: ({ color, size, focused }) => (
               <Image
-                source={focused ? TAB_ICONS.more.focused : TAB_ICONS.more.unfocused}
+                source={focused ? TAB_ICONS.mine.focused : TAB_ICONS.mine.unfocused}
                 tintColor={color}
                 style={{ width: size, height: size }}
               />
             ),
           }}
-          listeners={() => ({
-            tabPress: (e) => {
-              // Don't navigate to the (stub) /more screen — open the
-              // dropdown popover instead. The trigger is invisible and
-              // mounted in MoreTabDropdownAnchor below; ref.open() also
-              // measures its rect so the popover anchors correctly.
-              e.preventDefault();
-              moreTriggerRef.current?.open();
-            },
-          })}
         />
       </Tabs>
-
-      <MoreTabDropdownAnchor triggerRef={moreTriggerRef} />
     </View>
   );
 }

@@ -9,11 +9,11 @@
  * layout together; the tests here assert the collection / order / badge
  * mapping stay stable.
  *
- * M1 收敛中的 5 项：首页 / 看板(占位) / ●录音 / 工作台 / 我的。收件箱（M1-1
- * 迁出底栏）与我的事项（M1-2 迁出底栏）不再是 Tab。More 弹窗（`more`）在
- * M1-6 收敛为 `mine` 页（COD-34）—— 届时本文件再改名为 `mine`。
+ * M1 收敛后的最终 5 项：首页 / 看板(占位) / ●录音 / 工作台 / 我的。收件箱
+ * （M1-1 迁出底栏）与我的事项（M1-2 迁出底栏）不再是 Tab；More 弹窗（`more`）
+ * 在 M1-6 收敛为 `mine` 页（COD-34）。
  */
-export const TAB_ORDER = ["home", "board", "voice", "chat", "more"] as const;
+export const TAB_ORDER = ["home", "board", "voice", "chat", "mine"] as const;
 export type TabName = (typeof TAB_ORDER)[number];
 
 /** Semantic tab titles (M1-3, COD-31 + 收敛). 看板是 M3 真实看板前的占位。 */
@@ -22,7 +22,7 @@ export const TAB_TITLES: Record<TabName, string> = {
   board: "看板",
   voice: "录音",
   chat: "工作台",
-  more: "我的",
+  mine: "我的",
 };
 
 /**
@@ -38,7 +38,7 @@ export const TAB_BADGES: Record<TabName, TabBadgeKind> = {
   board: null,
   voice: null,
   chat: "chat",
-  more: null,
+  mine: null,
 };
 
 /** SF Symbol icon per tab, focused vs unfocused variant. */
@@ -47,7 +47,7 @@ export const TAB_ICONS: Record<TabName, { focused: string; unfocused: string }> 
   board: { focused: "sf:square.grid.2x2.fill", unfocused: "sf:square.grid.2x2" },
   voice: { focused: "sf:mic.fill", unfocused: "sf:mic" },
   chat: { focused: "sf:person.2.wave.2.fill", unfocused: "sf:person.2.wave.2" },
-  more: { focused: "sf:person.fill", unfocused: "sf:person" },
+  mine: { focused: "sf:person.fill", unfocused: "sf:person" },
 };
 
 /**
