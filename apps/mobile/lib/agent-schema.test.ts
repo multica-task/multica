@@ -49,4 +49,40 @@ describe("AgentSchema invocation permissions", () => {
     expect(parsed.runtime_id).toBe("");
     expect(parsed.runtime_bound).toBe(false);
   });
+
+  it("defaults tool fields to undefined on legacy backends", () => {
+    const parsed = AgentSchema.parse({ id: "agent-1" });
+
+    expect(parsed.mcp_config).toBeUndefined();
+    expect(parsed.mcp_config_redacted).toBeUndefined();
+    expect(parsed.composio_toolkit_allowlist).toBeUndefined();
+    expect(parsed.composio_toolkit_allowlist_redacted).toBeUndefined();
+  });
+
+  it("parses mcp_config as an opaque value", () => {
+    const parsed = AgentSchema.parse({
+      id: "agent-1",
+      mcp_config: { mcpServers: { filesystem: { command: "npx" } } },
+    });
+
+    expect(parsed.mcp_config).toEqual({
+      mcpServers: { filesystem: { command: "npx" } },
+    });
+    expect(parsed.mcp_config_redacted).toBeUndefined();
+  });
+
+  it("parses redaction flags and composio allowlist", () => {
+    const parsed = AgentSchema.parse({
+      id: "agent-1",
+      mcp_config: null,
+      mcp_config_redacted: true,
+      composio_toolkit_allowlist: ["github", "slack"],
+      composio_toolkit_allowlist_redacted: false,
+    });
+
+    expect(parsed.mcp_config).toBeNull();
+    expect(parsed.mcp_config_redacted).toBe(true);
+    expect(parsed.composio_toolkit_allowlist).toEqual(["github", "slack"]);
+    expect(parsed.composio_toolkit_allowlist_redacted).toBe(false);
+  });
 });

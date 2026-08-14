@@ -16,7 +16,7 @@ export function NoAgentBanner() {
 
   const handlePress = () => {
     if (!wsSlug) return;
-    router.push(`/${wsSlug}/more/agents`);
+    router.push(`/${wsSlug}/staff`);
   };
 
   return (

@@ -51,14 +51,14 @@ interface Row {
   href?: string;
 }
 
-// 工作分区（PRD §8.2）。数字员工行路由保持 more/agents，/staff 留 M4。
+// 工作分区（PRD §8.2）。数字员工行指向 /staff（M4-5；M1 曾占位 more/agents）。
 const WORK_ROWS: Row[] = [
   { icon: "mail-outline", label: "收件箱", href: "/inbox" },
   { icon: "checkbox-outline", label: "我的事项", href: "/my-issues" },
   { icon: "pin-outline", label: "置顶", href: "/more/pins" },
   { icon: "list-outline", label: "事项", href: "/more/issues" },
   { icon: "folder-open-outline", label: "项目", href: "/more/projects" },
-  { icon: "people-outline", label: "数字员工", href: "/more/agents" },
+  { icon: "people-outline", label: "数字员工", href: "/staff" },
 ];
 
 // 设置分区（PRD §8.2）。

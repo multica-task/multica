@@ -1,8 +1,10 @@
 /**
- * Chat tab — single-screen IA.
+ * Workbench tab — 会话 × 数字员工（PRD §7）。由 chat tab 重命名而来（M4-1）。
  *
  * Layout:
  *   View ─ Header(center: ChatTitleButton, right: ChatSessionActions)
+ *        ─ (BlockingNoticeBar?)
+ *        ─ 员工 Rail（横向，PRD §7.3）
  *        ─ (NoAgentBanner?)
  *        ─ KeyboardAvoidingView ─ ChatMessageList (includes live status
  *                                                  + timeline in its
@@ -11,7 +13,8 @@
  *                                ─ ChatComposer
  *
  * Session switching, agent selection, and session deletion all happen
- * inside this screen via Modal sheets — there is no `/chat/[id]` sub-route.
+ * inside this screen via Modal sheets — there is no `/workbench/[id]`
+ * sub-route.
  *
  * State (all local, none in Zustand):
  *   - activeSessionId   — which session is being viewed (null = new chat blank)
@@ -32,6 +35,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActionSheetIOS,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -89,10 +93,12 @@ import { AgentPickerSheet } from "@/components/chat/agent-picker-sheet";
 import { NoAgentBanner } from "@/components/chat/no-agent-banner";
 import { OfflineBanner } from "@/components/chat/offline-banner";
 import { RuntimeRequiredBanner } from "@/components/chat/runtime-required-banner";
+import { StaffRail } from "@/components/chat/staff-rail";
+import { BlockingNoticeBar } from "@/components/shared/blocking-notice-bar";
 import { useChatSelectStore } from "@/data/chat-select-store";
 import { isAgentRuntimeBound } from "@/lib/is-agent-runtime-bound";
 
-export default function ChatTab() {
+export default function WorkbenchTab() {
   const qc = useQueryClient();
   const wsId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const wsSlug = useWorkspaceStore((s) => s.currentWorkspaceSlug);
@@ -390,6 +396,57 @@ export default function ChatTab() {
     setActiveSessionId(null);
   }, []);
 
+  // ── 员工 Rail（PRD §7.3）──────────────────────────────────────────
+  // 点员工 = 切到该员工的最近会话；无会话则置为「新会话」目标（发送时
+  // ensureSession 自动创建 POST /api/chat/sessions）。
+  const handleSelectRailAgent = useCallback(
+    (agent: Agent) => {
+      const agentSessions = sessions
+        .filter((s) => s.agent_id === agent.id)
+        .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+      if (agentSessions.length > 0) {
+        setSelectedAgentId(null);
+        setActiveSessionId(agentSessions[0].id);
+      } else {
+        setSelectedAgentId(agent.id);
+        setActiveSessionId(null);
+      }
+    },
+    [sessions],
+  );
+
+  // 长按员工 → 查看档案 / 设为默认员工 / 新建会话 / 会话历史。
+  const handleLongPressAgent = useCallback(
+    (agent: Agent) => {
+      if (!wsSlug) return;
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: agent.name,
+          options: ["取消", "查看档案", "新建会话", "会话历史"],
+          cancelButtonIndex: 0,
+          // 设为默认员工（§6.4）依赖 M2 的默认员工设置（SecureStore），
+          // 本期不在此菜单暴露入口，避免死链。
+        },
+        (index) => {
+          if (index === 1) {
+            router.push({
+              pathname: "/[workspace]/staff/[id]",
+              params: { workspace: wsSlug, id: agent.id },
+            });
+          } else if (index === 2) {
+            handlePickAgent(agent);
+          } else if (index === 3) {
+            router.push({
+              pathname: "/[workspace]/chat-sessions",
+              params: { workspace: wsSlug },
+            });
+          }
+        },
+      );
+    },
+    [wsSlug, handlePickAgent],
+  );
+
   // Apply the user's pick from the chat-sessions route (or "no session"
   // when they delete the active one in the sheet).
   useEffect(() => {
@@ -459,6 +516,14 @@ export default function ChatTab() {
             onNewPress={handleNewChat}
           />
         }
+      />
+      {/* 阻断提示条（PRD §7.2）—— 三屏复用，零新增请求。工作台传入当前员工。 */}
+      <BlockingNoticeBar agentId={currentAgent?.id ?? undefined} />
+      {/* 员工 Rail（PRD §7.3）—— 员工即上下文。 */}
+      <StaffRail
+        activeAgentId={currentAgent?.id ?? null}
+        onSelectAgent={handleSelectRailAgent}
+        onLongPressAgent={handleLongPressAgent}
       />
       {availability === "none" ? <NoAgentBanner /> : null}
       <KeyboardAvoidingView

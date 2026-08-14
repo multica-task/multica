@@ -15,6 +15,8 @@
  */
 import type {
   Agent,
+  AgentActivityBucket,
+  AgentRunCount,
   AgentTask,
   Attachment,
   ChatMessage,
@@ -118,8 +120,12 @@ import {
   EMPTY_SQUAD_LIST,
   EMPTY_USER,
   EMPTY_WORKSPACE_LIST,
+  AgentActivity30dListSchema,
+  AgentRunCountListSchema,
   BriefListSchema,
   BriefSchema,
+  EMPTY_AGENT_ACTIVITY_30D,
+  EMPTY_AGENT_RUN_COUNTS,
   InboxListSchema,
   NotificationPreferenceResponseSchema,
   ListLabelsResponseSchema,
@@ -730,6 +736,31 @@ class ApiClient {
       EMPTY_DASHBOARD_FAILURE_BY_AGENT,
       { endpoint: "GET /api/dashboard/failures/by-agent" },
     );
+  }
+
+  // B-9 · 30 天统计（PRD §7.6 KPI 口径）。档案 KPI 四格的唯一数据源。
+  // 未镜像 / 404 / 权限不足时 parseWithFallback 落到空数组，KPI 格显示 `——`
+  // （StatPlaceholder），绝不从 snapshot 补算。注册见 docs/api-interfaces.md。
+  async listAgentActivity30d(
+    opts?: { signal?: AbortSignal },
+  ): Promise<AgentActivityBucket[]> {
+    const raw = await this.fetch<unknown>("/api/agent-activity-30d", {
+      signal: opts?.signal,
+    });
+    return parseWithFallback(raw, AgentActivity30dListSchema, EMPTY_AGENT_ACTIVITY_30D, {
+      endpoint: "listAgentActivity30d",
+    });
+  }
+
+  async listAgentRunCounts(
+    opts?: { signal?: AbortSignal },
+  ): Promise<AgentRunCount[]> {
+    const raw = await this.fetch<unknown>("/api/agent-run-counts", {
+      signal: opts?.signal,
+    });
+    return parseWithFallback(raw, AgentRunCountListSchema, EMPTY_AGENT_RUN_COUNTS, {
+      endpoint: "listAgentRunCounts",
+    });
   }
 
   // --- Issues ---
