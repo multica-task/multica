@@ -254,7 +254,7 @@ export function MentionSuggestionBar({
             return (
               <View className="px-3 py-3">
                 <Text className="text-xs text-muted-foreground">
-                  No matches.
+                  无匹配结果
                 </Text>
               </View>
             );
@@ -271,7 +271,7 @@ export function MentionSuggestionBar({
                   <Text className="text-xs font-medium text-brand">@</Text>
                 </View>
                 <Text className="flex-1 text-sm text-foreground">
-                  Everyone
+                  所有人
                 </Text>
                 <Badge label="全部" />
               </Pressable>

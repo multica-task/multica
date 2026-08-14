@@ -68,7 +68,7 @@ export default function IssueRunsRoute() {
     <View className="flex-1">
       <View className="px-4 pt-4 pb-3">
         <Text className="text-base font-semibold text-foreground">
-          Agent Runs
+          运行记录
         </Text>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>

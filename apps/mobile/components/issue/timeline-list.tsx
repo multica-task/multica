@@ -363,7 +363,7 @@ export function TimelineList({
       <IssueReactionRow issue={issue} />
       <View className="px-4 pt-4 pb-2 border-t border-border">
         <Text className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-          Activity
+          动态
         </Text>
       </View>
       {timelineLoading && (!entries || entries.length === 0) ? (
@@ -503,7 +503,7 @@ function UnreadDivider() {
     <View className="flex-row items-center gap-2 px-4">
       <View className="flex-1 h-px bg-destructive/40" />
       <Text className="text-[10px] uppercase tracking-wider font-medium text-destructive">
-        New
+        新消息
       </Text>
       <View className="flex-1 h-px bg-destructive/40" />
     </View>
