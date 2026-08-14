@@ -94,13 +94,8 @@ export default function TabsLayout() {
             ),
           }}
         />
-        {/* Inbox is no longer a tab — it moved to the pushed route
-            `/{slug}/inbox` (M1-1, COD-29). Its unread count re-homes to the
-            M1 gate's four badges — tab badge / home bell / quick-entry
-            tile / mine-page row — all fed by the same `useInboxUnreadCount`
-            hook (deduplicateInboxItems, same rule as web). */}
-        {/* 看板 — M3 真实看板落地前的占位 Tab，保住 5-Tab 底栏（§3.1「2+1+2」）。
-            原 my-issues Tab 已随 M1-2 迁出底栏（COD-30）。 */}
+        {/* 看板 — M3（COD-40）整屏看板：列 / 泳道 / 进度三视图（PRD §5）。
+            workspace 级项目任务可视化；我的事项走 `/{slug}/my-issues`。 */}
         <Tabs.Screen
           name="board"
           options={{

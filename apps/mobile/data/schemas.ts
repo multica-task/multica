@@ -729,5 +729,31 @@ export const EMPTY_ISSUE_FALLBACK: import("@multica/core/types").Issue = {
   updated_at: "",
 };
 
+// ---------------------------------------------------------------------------
+// Dashboard rollups — PRD §10.2 B-1. The 6 `/api/dashboard/*` endpoints are
+// not online yet; mobile gates them behind a one-shot probe
+// (`data/queries/dashboard.ts`). The schemas themselves live in
+// @multica/core/api/schemas (on the mobile sharing whitelist); these are the
+// mobile-owned fallback arrays so a 5xx / shape drift yields an empty list
+// instead of a render crash. `[]` is a truthful fallback here: a dashboard
+// that returns no rows and a dashboard that hasn't shipped render identically
+// (§9.4 — callers must not fabricate numbers).
+// ---------------------------------------------------------------------------
+import type {
+  DashboardUsageDaily,
+  DashboardUsageByAgent,
+  DashboardAgentRunTime,
+  DashboardRunTimeDaily,
+  DashboardFailureDaily,
+  DashboardFailureByAgent,
+} from "@multica/core/types";
+
+export const EMPTY_DASHBOARD_USAGE_DAILY: DashboardUsageDaily[] = [];
+export const EMPTY_DASHBOARD_USAGE_BY_AGENT: DashboardUsageByAgent[] = [];
+export const EMPTY_DASHBOARD_AGENT_RUN_TIME: DashboardAgentRunTime[] = [];
+export const EMPTY_DASHBOARD_RUN_TIME_DAILY: DashboardRunTimeDaily[] = [];
+export const EMPTY_DASHBOARD_FAILURE_DAILY: DashboardFailureDaily[] = [];
+export const EMPTY_DASHBOARD_FAILURE_BY_AGENT: DashboardFailureByAgent[] = [];
+
 // Helpers re-exported for ergonomic single-import at the call site.
 export type { Label, Project, ProjectResource };

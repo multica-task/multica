@@ -25,6 +25,15 @@ export const issueKeys = {
     scope: MyIssuesScope,
     filter: MyIssuesFilter,
   ) => [...issueKeys.myAll(wsId), scope, filter] as const,
+  // Board caches — flat `Issue[]` per (wsId, filterHash). `boardAll` is the
+  // prefix WS handlers invalidate; `boardList` adds the filter discriminator
+  // so changing the project / priority / assignee filters swaps the cache
+  // key instead of silently reusing a stale list (PRD §5.4). Hanging under
+  // `issueKeys.all(wsId)` guarantees `issue:*` events that invalidate the
+  // issues subtree also reach the board.
+  boardAll: (wsId: string | null) => [...issueKeys.all(wsId), "board"] as const,
+  boardList: (wsId: string | null, filterHash: string) =>
+    [...issueKeys.boardAll(wsId), filterHash] as const,
   detail: (wsId: string | null, id: string) =>
     [...issueKeys.all(wsId), "detail", id] as const,
   timeline: (wsId: string | null, id: string) =>

@@ -8,6 +8,7 @@ import { RealtimeProvider } from "@/data/realtime/realtime-provider";
 import { useInboxRealtime } from "@/data/realtime/use-inbox-realtime";
 import { useIssuesRealtime } from "@/data/realtime/use-issues-realtime";
 import { useMyIssuesRealtime } from "@/data/realtime/use-my-issues-realtime";
+import { useBoardRealtime } from "@/data/realtime/use-board-realtime";
 import { useChatSessionsRealtime } from "@/data/realtime/use-chat-sessions-realtime";
 import { useProjectsRealtime } from "@/data/realtime/use-projects-realtime";
 import { usePinsRealtime } from "@/data/realtime/use-pins-realtime";
@@ -76,6 +77,7 @@ function RealtimeSubscriptions() {
   useInboxRealtime();
   useIssuesRealtime();
   useMyIssuesRealtime();
+  useBoardRealtime();
   useChatSessionsRealtime();
   useProjectsRealtime();
   usePinsRealtime();
@@ -311,6 +313,8 @@ export default function WorkspaceLayout() {
         {/* Shared filter sheet for My Issues and the workspace Issues page —
             chooses the right view-store via `?scope=my|all` URL param. */}
         <Stack.Screen name="issues-filter" options={SHEET_OPTIONS} />
+        {/* 看板筛选（M3）— 视图 / 项目 / 状态 / 优先级 / 负责人（PRD §5.3）。 */}
+        <Stack.Screen name="board-view" options={SHEET_OPTIONS} />
         {/* Chat session-switch sheet. */}
         <Stack.Screen name="chat-sessions" options={SHEET_OPTIONS} />
         {/* Voice central-button prototype sub-pages (PRD §6.3). Pushed from
