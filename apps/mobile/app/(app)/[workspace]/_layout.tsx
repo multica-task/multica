@@ -210,6 +210,17 @@ export default function WorkspaceLayout() {
             title: "Mention",
           }}
         />
+        {/* Digital-employee picker (派单 / 默认员工). Same native-header +
+            UISearchController treatment as the assignee picker; the route
+            overrides the title per ?intent=. */}
+        <Stack.Screen
+          name="staff-picker"
+          options={{
+            ...SHEET_OPTIONS,
+            headerShown: true,
+            title: "选择员工",
+          }}
+        />
         <Stack.Screen
           name="issue/[id]/picker/project"
           options={SHEET_OPTIONS}
