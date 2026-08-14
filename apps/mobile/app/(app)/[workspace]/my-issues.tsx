@@ -53,9 +53,9 @@ import { THEME } from "@/lib/theme";
 // (`involves_user_id`, MUL-2397) covers owned agents + related squads; the
 // empty state copy still says "agents or squads".
 const SCOPES: { value: MyIssuesScope; label: string }[] = [
-  { value: "assigned", label: "Assigned" },
-  { value: "created", label: "Created" },
-  { value: "agents", label: "Agents" },
+  { value: "assigned", label: "指派给我" },
+  { value: "created", label: "我创建的" },
+  { value: "agents", label: "数字员工" },
 ];
 
 type IssueSection = { status: IssueStatus; data: Issue[] };
@@ -128,7 +128,7 @@ export default function MyIssues() {
 
   return (
     <View className="flex-1 bg-background">
-      <Header title="My Issues" right={<HeaderActions />} />
+      <Header title="我的事项" right={<HeaderActions />} />
       <ScopeToolbar
         scopes={SCOPES}
         scope={scope}
@@ -153,18 +153,18 @@ export default function MyIssues() {
       ) : error ? (
         <View className="px-4 gap-3 pt-4">
           <Text className="text-sm text-destructive">
-            Failed to load issues:{" "}
-            {error instanceof Error ? error.message : "unknown error"}
+            无法加载事项：{" "}
+            {error instanceof Error ? error.message : "未知错误"}
           </Text>
           <Button variant="outline" onPress={() => refetch()}>
-            <Text>Retry</Text>
+            <Text>重试</Text>
           </Button>
         </View>
       ) : showEmptyState ? (
         <EmptyState
           message={
             hasActiveFilters
-              ? "No issues match the current filters."
+              ? "没有符合当前筛选条件的事项。"
               : emptyMessageForScope(scope)
           }
         />
@@ -222,7 +222,7 @@ function FilterButton({
         variant="outline"
         size="sm"
         onPress={onPress}
-        accessibilityLabel="Filter"
+        accessibilityLabel="筛选"
         className="w-9 px-0"
       >
         <Ionicons
@@ -365,10 +365,10 @@ function EmptyState({ message }: { message: string }) {
 function emptyMessageForScope(scope: MyIssuesScope): string {
   switch (scope) {
     case "assigned":
-      return "No issues assigned to you.";
+      return "暂无指派给你的事项。";
     case "created":
-      return "You haven't created any issues.";
+      return "你还没有创建任何事项。";
     case "agents":
-      return "No issues assigned to your agents or squads yet.";
+      return "暂无指派给数字员工或战队的事项。";
   }
 }

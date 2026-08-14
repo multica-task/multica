@@ -141,14 +141,14 @@ export function ProjectLeadPickerBody({ value, query, onChange }: Props) {
             numberOfLines={1}
           >
             {item.kind === "unassigned"
-              ? "Unassigned"
+              ? "无负责人"
               : item.kind === "member"
                 ? item.member.name
                 : item.agent.name}
           </Text>
           {/* Inline type tag — Apple UITableViewCellStyleValue1. */}
           {item.kind === "agent" ? (
-            <Text className="text-sm text-muted-foreground">Agent</Text>
+            <Text className="text-sm text-muted-foreground">数字员工</Text>
           ) : null}
           {isRowSelected(value, item) ? (
             <Ionicons name="checkmark" size={20} color={checkColor} />
@@ -159,8 +159,8 @@ export function ProjectLeadPickerBody({ value, query, onChange }: Props) {
         <View className="px-3 py-8 items-center">
           <Text className="text-sm text-muted-foreground text-center">
             {query
-              ? "No matches."
-              : "No members or agents in this workspace yet."}
+              ? "无匹配结果。"
+              : "当前工作区还没有成员或数字员工。"}
           </Text>
         </View>
       }

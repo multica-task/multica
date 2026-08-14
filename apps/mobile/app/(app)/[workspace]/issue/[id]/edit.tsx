@@ -86,12 +86,12 @@ export default function EditIssue() {
       return;
     }
     Alert.alert(
-      "Discard changes?",
-      "Your edits to this issue will be lost.",
+      "放弃修改？",
+      "你对这个事项的修改将丢失。",
       [
-        { text: "Keep editing", style: "cancel" },
+        { text: "继续编辑", style: "cancel" },
         {
-          text: "Discard",
+          text: "放弃",
           style: "destructive",
           onPress: () => router.back(),
         },
@@ -113,8 +113,8 @@ export default function EditIssue() {
       onSuccess: () => router.back(),
       onError: (err) => {
         Alert.alert(
-          "Failed to save",
-          err instanceof Error ? err.message : "Unknown error",
+          "保存失败",
+          err instanceof Error ? err.message : "未知错误",
         );
       },
     });
@@ -123,7 +123,7 @@ export default function EditIssue() {
   const headerLeft = useCallback(
     () => (
       <Pressable onPress={onCancel} className="px-1 py-1">
-        <Text className="text-base text-brand">Cancel</Text>
+        <Text className="text-base text-brand">取消</Text>
       </Pressable>
     ),
     [onCancel],
@@ -137,7 +137,7 @@ export default function EditIssue() {
         className={canSave ? "px-1 py-1" : "px-1 py-1 opacity-40"}
       >
         <Text className="text-base text-brand font-semibold">
-          {update.isPending ? "Saving…" : "Save"}
+          {update.isPending ? "保存中…" : "保存"}
         </Text>
       </Pressable>
     ),
@@ -157,14 +157,14 @@ export default function EditIssue() {
           keyboardShouldPersistTaps="handled"
         >
           {!detail.data ? (
-            <Text className="text-sm text-muted-foreground">Loading…</Text>
+            <Text className="text-sm text-muted-foreground">加载中…</Text>
           ) : (
             <>
-              <Field label="Title">
+              <Field label="标题">
                 <TextInput
                   value={title}
                   onChangeText={setTitle}
-                  placeholder="Issue title"
+                  placeholder="事项标题"
                   placeholderTextColor={MOBILE_PLACEHOLDER_COLOR}
                   className="text-base text-foreground bg-secondary/50 rounded-md px-3 py-2"
                   returnKeyType="next"
@@ -172,7 +172,7 @@ export default function EditIssue() {
                 />
               </Field>
 
-              <Field label="Description">
+              <Field label="描述">
                 <DescriptionField
                   description={description}
                   disabled={update.isPending}

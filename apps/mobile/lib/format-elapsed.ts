@@ -6,10 +6,10 @@
  * read identically across web / desktop / mobile.
  */
 export function formatElapsedSecs(secs: number): string {
-  if (secs < 60) return `${secs}s`;
+  if (secs < 60) return `${secs} 秒`;
   const m = Math.floor(secs / 60);
   const s = secs % 60;
-  return s ? `${m}m ${s}s` : `${m}m`;
+  return s ? `${m} 分 ${s} 秒` : `${m} 分`;
 }
 
 /** Same formatting, but the input is milliseconds (server-stored `elapsed_ms`). */

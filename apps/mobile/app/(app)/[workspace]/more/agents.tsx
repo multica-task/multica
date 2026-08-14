@@ -5,7 +5,7 @@ export default function AgentsPage() {
   return (
     <View className="flex-1 items-center justify-center bg-background px-6">
       <Text className="text-sm text-muted-foreground text-center">
-        Agents coming soon.
+        数字员工功能即将上线。
       </Text>
     </View>
   );

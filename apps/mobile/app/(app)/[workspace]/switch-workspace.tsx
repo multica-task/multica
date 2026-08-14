@@ -46,12 +46,12 @@ export default function SwitchWorkspaceRoute() {
   const onSelect = (ws: Workspace) => {
     if (ws.slug === activeSlug) return;
     Alert.alert(
-      "Switch workspace",
-      `Switch to "${ws.name}"?`,
+      "切换工作区",
+      `切换到「${ws.name}」？`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "取消", style: "cancel" },
         {
-          text: "Switch",
+          text: "切换",
           onPress: () => {
             router.dismiss();
             router.replace(`/${ws.slug}/inbox`);
@@ -65,7 +65,7 @@ export default function SwitchWorkspaceRoute() {
     <View className="flex-1">
       <View className="px-4 pt-4 pb-3">
         <Text className="text-base font-semibold text-foreground">
-          Switch workspace
+          切换工作区
         </Text>
       </View>
       {isLoading ? (
@@ -106,8 +106,8 @@ function WorkspaceRow({
       disabled={active}
       accessibilityLabel={
         active
-          ? `${workspace.name}, current workspace`
-          : `Switch to ${workspace.name}`
+          ? `${workspace.name}，当前工作区`
+          : `切换到 ${workspace.name}`
       }
       className={cn(
         "flex-row items-center gap-3 px-4 py-3 active:bg-secondary",

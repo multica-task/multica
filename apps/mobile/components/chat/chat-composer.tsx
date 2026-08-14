@@ -104,13 +104,13 @@ export function ChatComposer({
         pathname: "/[workspace]/mention-picker",
         params: { workspace: wsSlug ?? "", mode: "chat" },
       }}
-      placeholder={sending ? "Agent is working…" : "Message…"}
+      placeholder={sending ? "数字员工处理中…" : "输入消息…"}
       pillLabel={
         sending
-          ? "Agent is working…"
+          ? "数字员工处理中…"
           : disabled
-            ? (disabledReason ?? "Chat unavailable")
-            : "Message…"
+            ? (disabledReason ?? "聊天不可用")
+            : "输入消息…"
       }
       pillIcon="chatbubble-ellipses-outline"
       disabled={disabled}
@@ -136,7 +136,7 @@ function StopButton({ onPress }: { onPress: () => void }) {
         className="h-8 w-8 items-center justify-center rounded-full bg-foreground active:opacity-80"
         hitSlop={12}
         accessibilityRole="button"
-        accessibilityLabel="Stop agent"
+        accessibilityLabel="停止数字员工"
       >
         <View
           style={{

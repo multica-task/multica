@@ -46,15 +46,15 @@ export function ChatTimeline({ items, isStreaming = false }: Props) {
       <CollapsibleTrigger asChild>
         <View
           accessibilityRole="button"
-          accessibilityLabel={`${processSteps.length} step${processSteps.length === 1 ? "" : "s"}`}
+          accessibilityLabel={`${processSteps.length} 步`}
           className="flex-row items-center gap-1 active:opacity-70"
         >
           <Ionicons name="chevron-forward" size={12} color="#71717a" />
           {isStreaming ? <StreamingDot /> : null}
           <Text className="text-xs text-muted-foreground">
             {processSteps.length === 1
-              ? "1 step"
-              : `${processSteps.length} steps`}
+              ? "1 步"
+              : `${processSteps.length} 步`}
           </Text>
         </View>
       </CollapsibleTrigger>
@@ -132,7 +132,7 @@ function ToolCallRow({ item }: { item: TaskMessagePayload }) {
       <View className="py-0.5 flex-row items-center gap-1.5">
         <View style={{ width: 12 }} />
         <Text className="text-xs font-medium text-foreground">
-          {item.tool ?? "tool"}
+          {item.tool ?? "工具"}
         </Text>
         {summary ? (
           <Text
@@ -151,7 +151,7 @@ function ToolCallRow({ item }: { item: TaskMessagePayload }) {
         <View className="py-0.5 flex-row items-center gap-1.5 active:opacity-70">
           <Ionicons name="chevron-forward" size={12} color="#71717a" />
           <Text className="text-xs font-medium text-foreground">
-            {item.tool ?? "tool"}
+            {item.tool ?? "工具"}
           </Text>
           {summary ? (
             <Text
@@ -178,7 +178,7 @@ function ToolResultRow({ item }: { item: TaskMessagePayload }) {
   const output = item.output ?? "";
   if (!output) return null;
   const preview = output.length > 80 ? `${output.slice(0, 80)}…` : output;
-  const prefix = item.tool ? `${item.tool} result: ` : "result: ";
+  const prefix = item.tool ? `${item.tool} 结果：` : "结果：";
   return (
     <Collapsible>
       <CollapsibleTrigger asChild>

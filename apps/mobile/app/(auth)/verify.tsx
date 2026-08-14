@@ -43,7 +43,7 @@ export default function Verify() {
       router.replace("/");
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(mapAuthError(err, "Couldn't verify the code. Try again."));
+      setError(mapAuthError(err, "无法验证验证码，请重试。"));
       setSubmitting(false);
       otpRef.current?.clear();
       setCode("");
@@ -62,7 +62,7 @@ export default function Verify() {
       setCode("");
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(mapAuthError(err, "Couldn't resend the code. Try again."));
+      setError(mapAuthError(err, "无法重新发送验证码，请重试。"));
     } finally {
       setResending(false);
     }
@@ -79,10 +79,10 @@ export default function Verify() {
             <MulticaLogo size={32} />
             <View className="gap-1 items-center">
               <Text className="text-2xl font-semibold text-foreground">
-                Enter verification code
+                输入验证码
               </Text>
               <Text className="text-sm text-muted-foreground text-center">
-                We sent a 6-digit code to {email}
+                我们已向 {email} 发送 6 位验证码
               </Text>
             </View>
           </View>
@@ -108,7 +108,7 @@ export default function Verify() {
               disabled={submitting || code.length < CODE_LENGTH}
               onPress={() => submit(code)}
             >
-              <Text>{submitting ? "Verifying..." : "Verify"}</Text>
+              <Text>{submitting ? "验证中…" : "验证"}</Text>
             </Button>
 
             <Pressable
@@ -124,10 +124,10 @@ export default function Verify() {
                 }
               >
                 {resending
-                  ? "Sending..."
+                  ? "发送中…"
                   : cooldown > 0
-                    ? `Resend code in ${cooldown}s`
-                    : "Resend code"}
+                    ? `${cooldown} 秒后可重新发送`
+                    : "重新发送验证码"}
               </Text>
             </Pressable>
 
@@ -136,7 +136,7 @@ export default function Verify() {
               disabled={submitting}
               onPress={() => router.back()}
             >
-              <Text>Use a different email</Text>
+              <Text>使用其他邮箱</Text>
             </Button>
           </View>
         </View>

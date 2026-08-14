@@ -57,18 +57,19 @@ interface Stage {
   static?: boolean;
 }
 
+// Display copy is Chinese per PRD §9.5.
 const TOOL_LABELS: Record<string, string> = {
-  bash: "Running command",
-  exec: "Running command",
-  read: "Reading files",
-  glob: "Reading files",
-  grep: "Searching code",
-  write: "Making edits",
-  edit: "Making edits",
-  multi_edit: "Making edits",
-  multiedit: "Making edits",
-  web_search: "Searching web",
-  websearch: "Searching web",
+  bash: "运行命令",
+  exec: "运行命令",
+  read: "读取文件",
+  glob: "读取文件",
+  grep: "搜索代码",
+  write: "修改代码",
+  edit: "修改代码",
+  multi_edit: "修改代码",
+  multiedit: "修改代码",
+  web_search: "搜索网页",
+  websearch: "搜索网页",
 };
 
 function pickStage(
@@ -77,22 +78,22 @@ function pickStage(
   availability: AgentAvailability | undefined,
 ): Stage {
   // Mirrors web: deferred is an older turn waiting for retry backoff, not
-  // active model work, so it must not fall through to "Thinking".
-  if (status === "deferred") return { label: "Retrying" };
+  // active model work, so it must not fall through to "思考中".
+  if (status === "deferred") return { label: "重试中" };
   if (
     (status === "queued" || status === "dispatched") &&
     availability === "offline"
   ) {
-    return { label: "Offline", static: true };
+    return { label: "离线", static: true };
   }
   if (
     (status === "queued" || status === "dispatched") &&
     availability === "unstable"
   ) {
-    return { label: "Reconnecting" };
+    return { label: "重连中" };
   }
-  if (status === "queued") return { label: "Queued" };
-  if (status === "dispatched") return { label: "Starting up" };
+  if (status === "queued") return { label: "排队中" };
+  if (status === "dispatched") return { label: "启动中" };
 
   let latest: TaskMessagePayload | null = null;
   for (let i = taskMessages.length - 1; i >= 0; i--) {
@@ -102,14 +103,14 @@ function pickStage(
       break;
     }
   }
-  if (!latest) return { label: "Thinking" };
-  if (latest.type === "thinking") return { label: "Thinking" };
-  if (latest.type === "text") return { label: "Typing" };
+  if (!latest) return { label: "思考中" };
+  if (latest.type === "thinking") return { label: "思考中" };
+  if (latest.type === "text") return { label: "输入中" };
   if (latest.type === "tool_use") {
     const slug = (latest.tool ?? "").toLowerCase();
-    return { label: TOOL_LABELS[slug] ?? "Working" };
+    return { label: TOOL_LABELS[slug] ?? "处理中" };
   }
-  return { label: "Thinking" };
+  return { label: "思考中" };
 }
 
 // Tabular figures for the 1Hz counter — proportional digits change the text
