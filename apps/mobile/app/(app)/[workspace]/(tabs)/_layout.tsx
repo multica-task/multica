@@ -18,6 +18,10 @@
  *
  * M1 约定：文件暂不改名，只调整 `Tabs.Screen` 的标题 / 图标 / 顺序。
  *
+ * M1-1（COD-29）：收件箱迁出到底栏外，成为 pushed route `/{slug}/inbox`。
+ * 其未读计数改为落在 M1 验收关口的四处角标（Tab badge / 首页铃铛 /
+ * 快捷入口磁贴 / 我的页角标）—— 见 #4 首页壳与 #6 我的页的消费方。
+ *
  * The "More" tab is currently **not a navigation target** — its press opens
  * a DropdownMenu popover anchored above the tab, which doubles as the
  * interim "我的" page until M1-6 (COD-34) migrates its entries into
@@ -42,10 +46,7 @@ import type { TriggerRef } from "@rn-primitives/dropdown-menu";
 import { useWorkspaceStore } from "@/data/workspace-store";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { THEME } from "@/lib/theme";
-import {
-  useInboxUnreadCount,
-  useChatUnreadMessageCount,
-} from "@/lib/unread-counts";
+import { useChatUnreadMessageCount } from "@/lib/unread-counts";
 import { MoreTabDropdownAnchor } from "@/components/nav/more-tab-dropdown";
 import {
   formatTabBadge,
@@ -68,13 +69,10 @@ export default function TabsLayout() {
   const t = THEME[colorScheme];
 
   const wsId = useWorkspaceStore((s) => s.currentWorkspaceId);
-  const inboxUnread = useInboxUnreadCount(wsId);
   const chatUnread = useChatUnreadMessageCount(wsId);
 
-  // Truncation aligned with web's sidebar badges: 99+ for both (see
-  // lib/tab-config.ts formatTabBadge). `undefined` makes React Navigation
-  // hide the badge, so zero-count is a free no-op.
-  const inboxBadge = formatTabBadge(inboxUnread);
+  // Truncation aligned with web's sidebar badges: 99+. `undefined` makes
+  // React Navigation hide the badge, so zero-count is a free no-op.
   const chatBadge = formatTabBadge(chatUnread);
 
   // Imperative handle into the More tab's dropdown — listeners.tabPress
@@ -93,23 +91,11 @@ export default function TabsLayout() {
           tabBarLabelStyle: { fontSize: 11 },
         }}
       >
-        {/* 首页 — 收件箱未读 badge 保持不变（deduplicateInboxItems → !read）。 */}
-        <Tabs.Screen
-          name="inbox"
-          options={{
-            title: TAB_TITLES.inbox,
-            tabBarBadge: TAB_BADGES.inbox ? inboxBadge : undefined,
-            tabBarBadgeStyle: BADGE_STYLE,
-            tabBarIcon: ({ color, size, focused }) => (
-              <Image
-                source={focused ? TAB_ICONS.inbox.focused : TAB_ICONS.inbox.unfocused}
-                tintColor={color}
-                style={{ width: size, height: size }}
-              />
-            ),
-          }}
-        />
-        {/* 看板 — 当前仍指向我的事项数据源；整屏看板在 M3 落地。 */}
+        {/* Inbox is no longer a tab — it moved to the pushed route
+            `/{slug}/inbox` (M1-1, COD-29). Its unread count re-homes to the
+            M1 gate's four badges — tab badge / home bell / quick-entry
+            tile / mine-page row — all fed by the same `useInboxUnreadCount`
+            hook (deduplicateInboxItems, same rule as web). */}
         <Tabs.Screen
           name="my-issues"
           options={{

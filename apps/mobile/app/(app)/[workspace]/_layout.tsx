@@ -132,6 +132,16 @@ export default function WorkspaceLayout() {
       <RealtimeSubscriptions />
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* Inbox moved out of the tab bar (M1-1, COD-29) — now a pushed
+            route. Title + back come from here; headerRight (batch-ops
+            menu + search/create) is set inside the screen. */}
+        <Stack.Screen
+          name="inbox"
+          options={{
+            title: "Inbox",
+            headerBackTitle: "Back",
+          }}
+        />
         <Stack.Screen
           name="issue/[id]"
           options={{

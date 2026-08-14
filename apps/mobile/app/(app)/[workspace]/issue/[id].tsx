@@ -45,7 +45,7 @@ import { useReplyTargetStore } from "@/data/stores/reply-target-store";
 
 export default function IssueDetail() {
   // `highlight` + `h` come from inbox deep-link (apps/mobile/app/(app)/
-  // [workspace]/(tabs)/inbox.tsx). `highlight` is the target comment id;
+  // [workspace]/inbox.tsx). `highlight` is the target comment id;
   // `h` is a per-tap nonce so re-tapping the same row re-fires the
   // scroll-and-flash effect.
   const { id, workspace: wsSlug, highlight, h } = useLocalSearchParams<{
