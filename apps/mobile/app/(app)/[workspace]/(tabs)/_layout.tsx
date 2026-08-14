@@ -42,6 +42,7 @@ import {
   TAB_ICONS,
   TAB_TITLES,
 } from "@/lib/tab-config";
+import { RecordButton } from "@/components/voice/record-button";
 
 // Only override backgroundColor — @react-navigation/elements Badge internally
 // sets borderRadius = size/2, height = size, minWidth = size, so a single
@@ -120,35 +121,19 @@ export default function TabsLayout() {
         {/* ● 中央按钮 — 录音入口。不导航：录音/翻译/长按发语音等交互由
             COD-35（M1-7）接入；图标暂用品牌色按钮占位，正式 RecordButton
             视觉（渐变 / 凸起）同步在 COD-35 收口。 */}
+        {/* ● 中央按钮 — 录音入口。tabBarButton 是 RecordButton（components/voice/），
+            短按出 Sheet、长按录音，自带完整交互，从不导航到这里。 */}
         <Tabs.Screen
           name="voice"
           options={{
             title: TAB_TITLES.voice,
-            tabBarIcon: ({ size, focused }) => (
-              <View
-                style={{
-                  width: size + 6,
-                  height: size + 6,
-                  borderRadius: (size + 6) / 3,
-                  backgroundColor: t.brand,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Image
-                  source={focused ? TAB_ICONS.voice.focused : TAB_ICONS.voice.unfocused}
-                  tintColor={t.brandForeground}
-                  style={{ width: size * 0.7, height: size * 0.7 }}
-                />
-              </View>
+            tabBarShowLabel: false,
+            tabBarButton: (props) => (
+              <RecordButton
+                focused={props.accessibilityState?.selected ?? false}
+              />
             ),
           }}
-          listeners={() => ({
-            tabPress: (e) => {
-              // 中央按钮不导航；(tabs)/voice.tsx 保留 Redirect 兜底 deep link。
-              e.preventDefault();
-            },
-          })}
         />
         {/* 工作台 — 会话未读 badge 保持不变（countUnreadChatMessages）。
             文件名 M4 才改 workbench.tsx。 */}

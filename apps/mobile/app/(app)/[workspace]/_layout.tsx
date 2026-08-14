@@ -313,6 +313,12 @@ export default function WorkspaceLayout() {
         <Stack.Screen name="issues-filter" options={SHEET_OPTIONS} />
         {/* Chat session-switch sheet. */}
         <Stack.Screen name="chat-sessions" options={SHEET_OPTIONS} />
+        {/* Voice central-button prototype sub-pages (PRD §6.3). Pushed from
+            the VoiceSheet (components/voice/voice-sheet.tsx). M1 carries the
+            prototype banner only; the full UI lands in M4. */}
+        <Stack.Screen name="voice-record" options={SHEET_OPTIONS} />
+        <Stack.Screen name="voice-translate" options={SHEET_OPTIONS} />
+        <Stack.Screen name="voice-talk" options={SHEET_OPTIONS} />
         {/* Workspace switcher — reached from the More popover's collapsed
             WorkspaceCard. Two-step (pick → iOS Alert confirm → switch). */}
         <Stack.Screen name="switch-workspace" options={SHEET_OPTIONS} />
