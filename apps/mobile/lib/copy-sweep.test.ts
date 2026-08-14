@@ -103,11 +103,13 @@ function scanFile(file: string, src: string): string[] {
         out.push(`${name}="${value}"`);
       }
     }
-    // Nav titles: `options={{ title: "…" }}` on Stack.Screen / Tabs.Screen.
+    // Nav titles: `options={{ title: "…", headerBackTitle: "…" }}` on
+    // Stack.Screen / Tabs.Screen. A nav header title or back-button label is
+    // user-visible copy, so it must be Chinese too.
     if (ts.isPropertyAssignment(node)) {
       const propName = node.name.getText(sf);
       if (
-        propName === "title" &&
+        (propName === "title" || propName === "headerBackTitle") &&
         node.initializer &&
         ts.isStringLiteral(node.initializer) &&
         isEnglish(node.initializer.text) &&
@@ -126,7 +128,7 @@ function scanFile(file: string, src: string): string[] {
               ts.isPropertyAssignment(p) && p.name.getText(sf) === "options",
           );
         if (isOptionsLike) {
-          out.push(`title="${node.initializer.text}"`);
+          out.push(`${propName}="${node.initializer.text}"`);
         }
       }
     }
