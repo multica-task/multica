@@ -29,6 +29,7 @@ import { agentListOptions } from "@/data/queries/agents";
 import { memberListOptions } from "@/data/queries/members";
 import { chatKeys, chatSessionsOptions } from "@/data/queries/chat";
 import { useCreateChatSession } from "@/data/mutations/chat";
+import { useAssistantStore } from "@/data/stores/assistant-store";
 import { useChatSessionPickerStore } from "@/data/stores/chat-session-picker-store";
 import { seedAcceptedPendingTask } from "@/data/realtime/chat-ws-updaters";
 import { pickVoiceTarget } from "@/lib/voice-target";
@@ -59,6 +60,11 @@ export function useSendVoiceMessage(): UseSendVoiceMessage {
   const qc = useQueryClient();
   const wsId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const userId = useAuthStore((s) => s.user?.id ?? null);
+  // M2 默认数字员工（PRD §6.4）：SecureStore 按 wsId 存映射，app 启动时
+  // hydrate。未 hydrate / 未设置时 `?? null` → 回退链取第一个可用员工。
+  const defaultAgentId = useAssistantStore(
+    (s) => (wsId ? (s.defaultAgentIds[wsId] ?? null) : null),
+  );
 
   const { data: agents = [], isFetched: agentsFetched } = useQuery(
     agentListOptions(wsId),
@@ -82,8 +88,9 @@ export function useSendVoiceMessage(): UseSendVoiceMessage {
         sessions,
         userId,
         memberRole,
+        defaultAgentId,
       }).agent,
-    [agents, sessions, userId, memberRole],
+    [agents, sessions, userId, memberRole, defaultAgentId],
   );
 
   const send = useCallback(async (): Promise<boolean> => {
@@ -92,6 +99,7 @@ export function useSendVoiceMessage(): UseSendVoiceMessage {
       sessions,
       userId,
       memberRole,
+      defaultAgentId,
     });
     if (!target.agent) return false;
 
@@ -180,7 +188,7 @@ export function useSendVoiceMessage(): UseSendVoiceMessage {
       );
       throw err;
     }
-  }, [agents, sessions, userId, memberRole, qc, createSession]);
+  }, [agents, sessions, userId, memberRole, defaultAgentId, qc, createSession]);
 
   return { targetAgent, ready, send };
 }

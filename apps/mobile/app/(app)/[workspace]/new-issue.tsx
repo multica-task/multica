@@ -33,6 +33,9 @@ import { useNewIssueDraftStore } from "@/data/stores/new-issue-draft-store";
 import { useMentionInput } from "@/lib/use-mention-input";
 
 export default function NewIssueModal() {
+  // 简报「让员工深挖」（M2-7）经 staff-picker?intent=dispatch 透传 title /
+  // description 一次性预填：标题「调研：{简报标题}」+ 摘要引用块。仅 mount 时
+  // 生效（seed 参数不参与受控回写）。
   const [title, setTitle] = useState("");
   const description = useMentionInput();
   // Attribute chips (status / priority / assignee / due date / project)
@@ -54,9 +57,16 @@ export default function NewIssueModal() {
   // reset so a fresh open (or an open with stale params) never keeps a
   // previous selection. Only `agent` is produced today; the union check
   // keeps the seed safe if a future caller passes member/squad.
-  const { assignee_type, assignee_id } = useLocalSearchParams<{
+  const {
+    assignee_type,
+    assignee_id,
+    title: seedTitle,
+    description: seedDescription,
+  } = useLocalSearchParams<{
     assignee_type?: string;
     assignee_id?: string;
+    title?: string;
+    description?: string;
   }>();
 
   useEffect(() => {
@@ -70,9 +80,16 @@ export default function NewIssueModal() {
     ) {
       setAssignee({ type: assignee_type, id: assignee_id });
     }
+    if (typeof seedTitle === "string" && seedTitle.length > 0) {
+      setTitle(seedTitle);
+    }
+    if (typeof seedDescription === "string" && seedDescription.length > 0) {
+      description.setText(seedDescription);
+    }
     return () => {
       resetDraft();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed 仅在 mount 时生效
   }, [resetDraft, setAssignee, assignee_type, assignee_id]);
 
   const createIssue = useCreateIssue();

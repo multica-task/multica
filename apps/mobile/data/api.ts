@@ -79,6 +79,8 @@ import {
   EMPTY_AGENT_LIST,
   EMPTY_AGENT_TASK_LIST,
   EMPTY_ATTACHMENT_LIST,
+  EMPTY_BRIEF,
+  EMPTY_BRIEF_LIST,
   EMPTY_CHAT_MESSAGE_LIST,
   EMPTY_CHAT_PENDING_TASK,
   EMPTY_CHAT_SESSION_LIST,
@@ -98,6 +100,8 @@ import {
   EMPTY_SQUAD_LIST,
   EMPTY_USER,
   EMPTY_WORKSPACE_LIST,
+  BriefListSchema,
+  BriefSchema,
   InboxListSchema,
   NotificationPreferenceResponseSchema,
   ListLabelsResponseSchema,
@@ -117,6 +121,7 @@ import {
   UserSchema,
   WorkspaceListSchema,
 } from "./schemas";
+import type { Brief } from "./schemas";
 import type { ZodType } from "zod";
 import { getCurrentSlug } from "./workspace-store";
 import { parseWithFallback } from "@/lib/parse-response";
@@ -447,6 +452,40 @@ class ApiClient {
     });
     return parseWithFallback(raw, InboxListSchema, EMPTY_INBOX_LIST, {
       endpoint: "listInbox",
+    });
+  }
+
+  // GET /api/dashboard/usage/daily — 首页报告卡 / 看板 Hero 的首选数据源
+  // （PRD §10.2 B-1）。服务端尚未上线且未加入平台 API mirror 白名单时真机
+  // 404。响应体不被 UI 消费 —— 本方法只用来「探测端点是否就绪」，404 抛
+  // ApiError 由调用方整体降级并缓存本次会话判定（PRD §4.4 接口就绪判定）。
+  async probeDashboard(opts?: { signal?: AbortSignal }): Promise<void> {
+    await this.fetch<void>("/api/dashboard/usage/daily", {
+      signal: opts?.signal,
+    });
+  }
+
+  // GET /api/briefs — 行业简报（PRD §10.2 B-2 契约）。本期数据源为 mock
+  // （`USE_MOCK_BRIEFS=true`，`data/mocks/briefs.ts`），本方法只在开关改
+  // `false`、后端上线后才会被调用；契约字段与 BriefSchema 一致。
+  async listBriefs(opts?: { signal?: AbortSignal }): Promise<Brief[]> {
+    const raw = await this.fetch<unknown>("/api/briefs", {
+      signal: opts?.signal,
+    });
+    return parseWithFallback(raw, BriefListSchema, EMPTY_BRIEF_LIST, {
+      endpoint: "listBriefs",
+    });
+  }
+
+  async getBrief(
+    id: string,
+    opts?: { signal?: AbortSignal },
+  ): Promise<Brief> {
+    const raw = await this.fetch<unknown>(`/api/briefs/${id}`, {
+      signal: opts?.signal,
+    });
+    return parseWithFallback(raw, BriefSchema, EMPTY_BRIEF, {
+      endpoint: "getBrief",
     });
   }
 

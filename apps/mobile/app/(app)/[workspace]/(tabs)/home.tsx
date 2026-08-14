@@ -14,11 +14,13 @@
 import { useMemo } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/data/auth-store";
 import { useWorkspaceStore } from "@/data/workspace-store";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { THEME } from "@/lib/theme";
+import { issueKeys } from "@/data/queries/issues";
+import { briefKeys } from "@/data/queries/briefs";
 import {
   buildMyIssuesFilter,
   myIssueListOptions,
@@ -35,6 +37,7 @@ export default function HomeScreen() {
   const userId = useAuthStore((s) => s.user?.id ?? null);
   const { colorScheme } = useColorScheme();
   const isFocused = useIsFocused();
+  const qc = useQueryClient();
 
   // Todo block's query lives here so the pull-to-refresh can refetch it;
   // the list renders inside <TodoList>. Personal scope — see header comment.
@@ -57,8 +60,12 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={isFocused && todoQuery.isRefetching}
             onRefresh={() => {
-              // PRD §4.7: 下拉刷新刷新 ②③④ 全部查询。M1 只有待办是真数据。
+              // PRD §4.7: 下拉刷新刷新 ②③④ 全部查询。
               void todoQuery.refetch();
+              // ② 报告卡 = workspace issues（工作区维度，客户端聚合）。
+              void qc.refetchQueries({ queryKey: issueKeys.list(wsId) });
+              // ④ 简报（mock，refetch 幂等）。
+              void qc.refetchQueries({ queryKey: briefKeys.all(wsId) });
             }}
             tintColor={THEME[colorScheme].mutedForeground}
           />

@@ -731,3 +731,42 @@ export const EMPTY_ISSUE_FALLBACK: import("@multica/core/types").Issue = {
 
 // Helpers re-exported for ergonomic single-import at the call site.
 export type { Label, Project, ProjectResource };
+
+// ─────────────────────────────────────────────────────────────────────
+// 行业简报（PRD §10.2 B-2 契约）。
+// 本期数据源为 mock（`data/mocks/briefs.ts` + `USE_MOCK_BRIEFS`）；schema
+// 与最终接口契约字段一致，接口上线后只改数据源，类型与组件零改动。
+export const BriefSchema = z.object({
+  id: z.string(),
+  workspace_id: z.string().default(""),
+  category: z.string().default(""),
+  title: z.string().default(""),
+  summary: z.string().default(""),
+  content: z.string().default(""),
+  source_url: z.string().nullable().default(null),
+  source_name: z.string().nullable().default(null),
+  published_at: z.string().default(""),
+  read: z.boolean().catch(false),
+  relevance: z.enum(["high", "medium", "low"]).catch("medium"),
+}).loose();
+
+export type Brief = z.infer<typeof BriefSchema>;
+
+export const BriefListSchema = z.array(BriefSchema).default([]);
+export const EMPTY_BRIEF_LIST: Brief[] = [];
+
+// Single-brief fallback for `GET /api/briefs/:id` drift. `id: ""` flags
+// "not found" downstream — the detail screen shows the empty state.
+export const EMPTY_BRIEF: Brief = {
+  id: "",
+  workspace_id: "",
+  category: "",
+  title: "",
+  summary: "",
+  content: "",
+  source_url: null,
+  source_name: null,
+  published_at: "",
+  read: false,
+  relevance: "medium",
+};
