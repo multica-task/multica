@@ -55,9 +55,6 @@ import { VoiceSheet } from "./voice-sheet";
 import { RecordingOverlay } from "./recording-overlay";
 import { VoiceToast } from "./toast";
 
-/** Long-press threshold; override per screen for prototype testing (1/2/3s). */
-export const DEFAULT_LONG_PRESS_MS = 2000;
-
 export interface RecordButtonProps {
   /**
    * Hold duration before recording starts, in ms. Defaults to the assistant
@@ -154,8 +151,7 @@ export function RecordButton({
   const autoJumpWorkbench = useAssistantStore(
     (s) => s.voicePrefs.autoJumpWorkbench,
   );
-  const effectiveLongPressMs =
-    longPressMs ?? holdThresholdSeconds * 1000 ?? DEFAULT_LONG_PRESS_MS;
+  const effectiveLongPressMs = longPressMs ?? holdThresholdSeconds * 1000;
 
   const { targetAgent, ready, send } = useSendVoiceMessage();
 
