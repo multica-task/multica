@@ -7,12 +7,21 @@
  * `import type` from @multica/core; logic is duplicated to keep mobile
  * independent. Any rule change must be applied here too.
  *
- * Rule (mirrors backend `server/internal/handler/issue.go:1471-1490`):
- *   - Workspace-visibility agents → assignable by any workspace member
- *   - Private agents               → only owner + workspace admins/owners
+ * Rule (mirrors `packages/core/permissions/rules.ts:canAssignAgentToIssue`,
+ * which mirrors the backend `canInvokeAgent` / `validateAssigneePair` gate,
+ * MUL-3963):
+ *   - The agent owner may always invoke their own agent, regardless of mode.
+ *   - `permission_mode "private"` → ONLY the owner. Workspace admins do NOT
+ *     bypass a private agent (the key behavior change vs the pre-MUL-3963
+ *     `visibility` model).
+ *   - `permission_mode "public_to"` + a workspace target → any workspace
+ *     member.
+ *   - `permission_mode "public_to"` + a member target → only the matching
+ *     user (a targeted employee must not be filtered out).
+ *   - Team targets are reserved and INERT in v1 — they never grant.
  *
- * Used by the chat agent picker to filter "agents I can talk to" and by
- * NoAgentBanner to detect the all-zero state.
+ * Used by the chat agent picker to filter "agents I can talk to", the
+ * staff-picker dispatch list, and the workspace-agent availability banner.
  */
 import type { Agent } from "@multica/core/types";
 
@@ -30,11 +39,31 @@ export function canAssignAgent(
       ? memberRole
       : null;
 
-  if (agent.visibility === "workspace") {
+  // The owner may always invoke their own agent, regardless of mode.
+  if (agent.owner_id !== null && agent.owner_id === userId) {
+    return true;
+  }
+
+  // Private agents are owner-only — no admin bypass.
+  if (agent.permission_mode === "private") {
+    return false;
+  }
+
+  // permission_mode === "public_to": resolve the invocation grants. A
+  // workspace grant opens invocation to any workspace member. The `?? []`
+  // guards against legacy self-host backends / stale caches that omit the
+  // field even though the type says required-array (GH #4915, same guard as
+  // rules.ts).
+  const targets = agent.invocation_targets ?? [];
+  if (targets.some((t) => t.target_type === "workspace")) {
+    // role is null when the member list hasn't loaded yet or the user isn't
+    // a workspace member — a workspace grant requires an actual member.
     return role !== null;
   }
-  // visibility === "private" (or anything else — treat unknown as private,
-  // which is the safer side of an enum drift).
-  if (role === "owner" || role === "admin") return true;
-  return agent.owner_id !== null && agent.owner_id === userId;
+
+  // A member grant opens invocation to exactly the targeted user. Team
+  // targets are reserved and INERT in v1 — they never grant.
+  return targets.some(
+    (t) => t.target_type === "member" && t.target_id === userId,
+  );
 }
