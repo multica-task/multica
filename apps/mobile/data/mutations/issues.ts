@@ -108,7 +108,7 @@ export function useCreateComment(issueId: string) {
           content: vars.content,
           parentId: vars.parentId,
           attachmentIds: vars.attachmentIds,
-          error: err instanceof Error ? err.message : "Send failed",
+          error: err instanceof Error ? err.message : "发送失败",
         });
       }
     },

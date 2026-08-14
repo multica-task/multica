@@ -390,7 +390,7 @@ function AssistantRow({
       ) : null}
       {isNoResponse ? (
         <Text className="text-sm italic text-muted-foreground">
-          The agent finished this turn without a text reply.
+          数字员工结束了本轮，但没有返回文字回复。
         </Text>
       ) : (
         <Markdown
@@ -463,7 +463,7 @@ function QuickActions({
   return (
     <View
       className="flex-row flex-wrap gap-2 pt-0.5"
-      accessibilityLabel="Suggested follow-ups"
+      accessibilityLabel="建议的后续提问"
     >
       {actions.slice(0, 3).map((action, index) => (
         <Pressable
@@ -510,10 +510,10 @@ function ElapsedCaption({
 }) {
   const label =
     variant === "replied"
-      ? `Replied in ${formatElapsedMs(elapsedMs)}`
+      ? `${formatElapsedMs(elapsedMs)} 内回复`
       : variant === "finished"
-        ? `Finished in ${formatElapsedMs(elapsedMs)}`
-        : `Failed after ${formatElapsedMs(elapsedMs)}`;
+        ? `${formatElapsedMs(elapsedMs)} 内结束`
+        : `${formatElapsedMs(elapsedMs)} 后失败`;
   return (
     <Text className="text-xs text-muted-foreground/80 mt-1">{label}</Text>
   );
@@ -557,7 +557,7 @@ function FailureBubble({
             <CollapsibleTrigger asChild>
               <View
                 accessibilityRole="button"
-                accessibilityLabel="Show error details"
+                accessibilityLabel="查看错误详情"
                 className="mt-1 flex-row items-center gap-1 active:opacity-70"
               >
                 <Ionicons
@@ -566,7 +566,7 @@ function FailureBubble({
                   color="#71717a"
                 />
                 <Text className="text-xs text-muted-foreground">
-                  Show details
+                  查看详情
                 </Text>
               </View>
             </CollapsibleTrigger>

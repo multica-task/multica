@@ -22,20 +22,23 @@ export const BOARD_STATUSES: IssueStatus[] = [
   "blocked",
 ];
 
+// Display copy is Chinese per PRD §9.5 (the translation table is the single
+// source of truth). Only the display values change; enum keys and the
+// BOARD_STATUSES order/members are behavior semantics and stay untouched.
 export const STATUS_LABEL: Record<IssueStatus, string> = {
-  backlog: "Backlog",
-  todo: "Todo",
-  in_progress: "In Progress",
-  in_review: "In Review",
-  done: "Done",
-  blocked: "Blocked",
-  cancelled: "Cancelled",
+  backlog: "待规划",
+  todo: "待处理",
+  in_progress: "进行中",
+  in_review: "待评审",
+  done: "已完成",
+  blocked: "受阻",
+  cancelled: "已取消",
 };
 
 export const PRIORITY_LABEL: Record<IssuePriority, string> = {
-  none: "No priority",
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-  urgent: "Urgent",
+  none: "无优先级",
+  low: "低",
+  medium: "中",
+  high: "高",
+  urgent: "紧急",
 };

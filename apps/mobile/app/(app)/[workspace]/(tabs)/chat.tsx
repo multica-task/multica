@@ -261,8 +261,8 @@ export default function ChatTab() {
       if (!currentAgent) return;
       if (!runtimeBound) {
         Alert.alert(
-          "Runtime required",
-          "Bind a runtime to this agent on web or desktop before sending a message.",
+          "需要连接工位",
+          "请先在网页端或桌面端为这个数字员工绑定工位，再发送消息。",
         );
         return;
       }
@@ -402,12 +402,12 @@ export default function ChatTab() {
   const handleDeleteActive = useCallback(() => {
     if (!activeSession) return;
     Alert.alert(
-      "Delete this chat?",
-      activeSession.title || "Untitled chat",
+      "删除这个会话？",
+      activeSession.title || "无标题会话",
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "取消", style: "cancel" },
         {
-          text: "Delete",
+          text: "删除",
           style: "destructive",
           onPress: () => {
             const id = activeSession.id;
@@ -427,13 +427,13 @@ export default function ChatTab() {
     isArchived === true ||
     !runtimeBound;
   const disabledReason = !currentAgent
-    ? "No agent selected"
+    ? "未选择数字员工"
     : availability === "none"
-      ? "No agents in this workspace"
+      ? "当前工作区没有数字员工"
       : isArchived
-        ? "This chat is archived"
+        ? "这个会话已归档"
         : !runtimeBound
-          ? "Agent needs a runtime"
+          ? "数字员工需要连接工位"
         : undefined;
 
   return (

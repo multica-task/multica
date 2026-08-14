@@ -138,11 +138,11 @@ export function MentionSuggestionBar({
 
       const out: Row[] = [];
       if (matchedRecent.length > 0) {
-        out.push({ kind: "section", label: "Recent" });
+        out.push({ kind: "section", label: "最近" });
         for (const i of matchedRecent) out.push({ kind: "issue", issue: i });
       }
       if (matchedMine.length > 0) {
-        out.push({ kind: "section", label: "My issues" });
+        out.push({ kind: "section", label: "我的事项" });
         for (const i of matchedMine) out.push({ kind: "issue", issue: i });
       }
       if (out.length === 0) out.push({ kind: "empty" });
@@ -191,15 +191,15 @@ export function MentionSuggestionBar({
     const out: Row[] = [];
     if (showAll) out.push({ kind: "all" });
     if (matchedMembers.length > 0) {
-      out.push({ kind: "section", label: "Members" });
+      out.push({ kind: "section", label: "成员" });
       for (const m of matchedMembers) out.push({ kind: "member", member: m });
     }
     if (matchedAgents.length > 0) {
-      out.push({ kind: "section", label: "Agents" });
+      out.push({ kind: "section", label: "数字员工" });
       for (const a of matchedAgents) out.push({ kind: "agent", agent: a });
     }
     if (matchedSquads.length > 0) {
-      out.push({ kind: "section", label: "Squads" });
+      out.push({ kind: "section", label: "战队" });
       for (const s of matchedSquads) out.push({ kind: "squad", squad: s });
     }
     if (out.length === 0) out.push({ kind: "empty" });
@@ -273,7 +273,7 @@ export function MentionSuggestionBar({
                 <Text className="flex-1 text-sm text-foreground">
                   Everyone
                 </Text>
-                <Badge label="All" />
+                <Badge label="全部" />
               </Pressable>
             );
           }
@@ -297,7 +297,7 @@ export function MentionSuggestionBar({
                 <Text className="flex-1 text-sm text-foreground">
                   {item.member.name}
                 </Text>
-                <Badge label="Member" />
+                <Badge label="成员" />
               </Pressable>
             );
           }
@@ -323,7 +323,7 @@ export function MentionSuggestionBar({
                   {item.agent.name}
                 </Text>
                 <Badge
-                  label={runtimeBound ? "Agent" : "Needs runtime"}
+                  label={runtimeBound ? "数字员工" : "需要工位"}
                   tone={runtimeBound ? "brand" : "outline"}
                 />
               </Pressable>
@@ -345,7 +345,7 @@ export function MentionSuggestionBar({
                 <Text className="flex-1 text-sm text-foreground">
                   {item.squad.name}
                 </Text>
-                <Badge label="Squad" tone="outline" />
+                <Badge label="战队" tone="outline" />
               </Pressable>
             );
           }
