@@ -479,9 +479,9 @@ class ApiClient {
     });
   }
 
-  // GET /api/briefs — 行业简报（PRD §10.2 B-2 契约）。本期数据源为 mock
-  // （`USE_MOCK_BRIEFS=true`，`data/mocks/briefs.ts`），本方法只在开关改
-  // `false`、后端上线后才会被调用；契约字段与 BriefSchema 一致。
+  // GET /api/briefs — 行业简报（PRD §10.2 B-2 契约）。无后端 MVP 阶段数据源是
+  // 每日 JSON 链路（`data/briefs/daily-source.ts`），本方法在 B-2 后端上线后
+  // 由 `briefListOptions` 的 queryFn 切回调用；契约字段与 BriefSchema 一致。
   async listBriefs(opts?: { signal?: AbortSignal }): Promise<Brief[]> {
     const raw = await this.fetch<unknown>("/api/briefs", {
       signal: opts?.signal,

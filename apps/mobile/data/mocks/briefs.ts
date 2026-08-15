@@ -5,8 +5,9 @@
  * 删除本文件即可 —— 类型 `Brief` 定义在 `data/queries/briefs.ts`，与 B-2
  * 契约字段完全一致，切换时组件零改动。
  *
- * 数据级别：B 类内容型（§0.4）—— UI 必须带「示例数据」徽标，且徽标与
- * `USE_MOCK_BRIEFS` 常量同源（见 `data/queries/briefs.ts`）。
+ * 数据级别：B 类内容型（§0.4）—— UI 必须带「示例数据」徽标。COD-55 后本文件
+ * 是每日 JSON 链路（`data/briefs/daily-source.ts`）的最后兜底：远程拉取失败、
+ * 且本地缓存为空时渲染，此时 `source: "mock"`，徽标显示「示例数据」。
  *
  * 内容要求（§4.6 Mock 数据设计）：
  *   - 6–8 条；AI Infra / 竞品 / 政策 / 融资 各 1–2 条
