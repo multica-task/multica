@@ -142,6 +142,12 @@ export default function WorkspaceLayout() {
             headerBackTitle: "返回",
           }}
         />
+        {/* My Issues moved out of the tab bar (M1-2) — now a pushed route
+            reached from the More menu / future Mine page. */}
+        <Stack.Screen
+          name="my-issues"
+          options={{ title: "我的事项", headerBackTitle: "返回" }}
+        />
         <Stack.Screen
           name="issue/[id]"
           options={{

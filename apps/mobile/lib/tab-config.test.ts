@@ -18,8 +18,8 @@ import {
 describe("tab-config", () => {
   it("has exactly the 5-tab collection (PRD §3.1 2+1+2)", () => {
     expect(TAB_ORDER).toEqual([
-      "inbox",
-      "my-issues",
+      "home",
+      "board",
       "voice",
       "chat",
       "more",
@@ -56,12 +56,12 @@ describe("tab-config", () => {
   });
 
   it("wires the inbox badge only to 首页 and chat badge only to 工作台", () => {
-    expect(TAB_BADGES.inbox).toBe("inbox");
+    expect(TAB_BADGES.home).toBe("inbox");
     expect(TAB_BADGES.chat).toBe("chat");
     // No other tab carries a badge.
     const others = TAB_ORDER.filter(
-      (t): t is Exclude<TabName, "inbox" | "chat"> =>
-        t !== "inbox" && t !== "chat",
+      (t): t is Exclude<TabName, "home" | "chat"> =>
+        t !== "home" && t !== "chat",
     );
     for (const tab of others) {
       expect(TAB_BADGES[tab]).toBeNull();

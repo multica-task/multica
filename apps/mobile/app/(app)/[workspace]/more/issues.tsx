@@ -9,7 +9,7 @@
  * scoped (no scope param on the wire), so `issueKeys.list(wsId)` and
  * `useIssuesRealtime` need no changes.
  *
- * Differences vs My Issues (`(tabs)/my-issues.tsx`):
+ * Differences vs My Issues (`my-issues.tsx`):
  *   - Workspace-wide list (all issues), not user-scoped.
  *   - Three scopes are `all / members / agents` (assignee_type pre-filter),
  *     not `assigned / created / agents` (per-user predicates).
@@ -206,7 +206,7 @@ export default function IssuesPage() {
 
 /**
  * Outline icon button matching the pill height. Identical to the helper in
- * `(tabs)/my-issues.tsx` for the same reason ScopeToolbar is duplicated:
+ * `my-issues.tsx` for the same reason ScopeToolbar is duplicated:
  * two callers don't justify a shared primitive yet.
  */
 function FilterButton({
@@ -246,7 +246,7 @@ function FilterButton({
  * Toolbar row mirroring web `IssuesHeader`
  * (`packages/views/issues/components/issues-header.tsx:516-543`): left-aligned
  * scope pill group + right-side Filter icon (red dot on active filters).
- * Identical to the equivalent in `(tabs)/my-issues.tsx` — kept duplicated
+ * Identical to the equivalent in `my-issues.tsx` — kept duplicated
  * because the threshold for a shared `components/ui/` primitive is 3 callers,
  * and two callers don't justify the abstraction yet.
  */

@@ -414,7 +414,7 @@ export function useToggleIssueReaction(issueId: string) {
  * cache; description stays authoritative because the server resolves it
  * against description_base and hidden channel-media markers. Settle invalidates
  * the my-issues list so a status change re-buckets the SectionList in
- * (tabs)/my-issues.tsx automatically.
+ * my-issues.tsx automatically.
  *
  * Mobile cache is flat `Issue[]` (not bucketed `byStatus`), so we DON'T mirror
  * web's `patchIssueInBuckets` rebalancing — settling via `invalidate` is
