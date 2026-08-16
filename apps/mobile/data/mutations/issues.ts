@@ -431,19 +431,42 @@ export function useUpdateIssue(issueId: string) {
       const key = issueKeys.detail(wsId, issueId);
       await qc.cancelQueries({ queryKey: key });
       const prev = qc.getQueryData<Issue>(key);
+      const {
+        description: _description,
+        description_base: _descriptionBase,
+        ...optimisticPatch
+      } = patch;
       if (prev) {
-        const {
-          description: _description,
-          description_base: _descriptionBase,
-          ...optimisticPatch
-        } = patch;
         qc.setQueryData<Issue>(key, { ...prev, ...optimisticPatch });
       }
-      return { prev, key };
+      // Board caches: snapshot + apply the same optimistic object so a
+      // long-press status change moves the card across columns ≤500ms
+      // without a refetch bounce (PRD §5.5). The board groups columns
+      // client-side, so replacing the issue object is a cross-column move.
+      // Restored from `boardSnapshot` on error; settle invalidates as the
+      // safety net for the WS-conflict case.
+      const boardSnapshot = qc.getQueriesData<Issue[]>({
+        queryKey: issueKeys.boardAll(wsId),
+      });
+      if (boardSnapshot.length > 0) {
+        qc.setQueriesData<Issue[]>(
+          { queryKey: issueKeys.boardAll(wsId) },
+          (old) =>
+            old
+              ? old.map((i) =>
+                  i.id === issueId ? { ...i, ...optimisticPatch } : i,
+                )
+              : old,
+        );
+      }
+      return { prev, key, boardSnapshot };
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev !== undefined && ctx.key) {
         qc.setQueryData(ctx.key, ctx.prev);
+      }
+      for (const [qkey, data] of ctx?.boardSnapshot ?? []) {
+        qc.setQueryData(qkey, data);
       }
     },
     onSuccess: (server) => {
@@ -453,6 +476,7 @@ export function useUpdateIssue(issueId: string) {
       qc.invalidateQueries({ queryKey: issueKeys.detail(wsId, issueId) });
       qc.invalidateQueries({ queryKey: issueKeys.myAll(wsId) });
       qc.invalidateQueries({ queryKey: issueKeys.list(wsId) });
+      qc.invalidateQueries({ queryKey: issueKeys.boardAll(wsId) });
     },
   });
 }

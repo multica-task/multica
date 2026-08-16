@@ -25,6 +25,12 @@ import type {
   CreateLabelRequest,
   CreateProjectRequest,
   CreateProjectResourceRequest,
+  DashboardAgentRunTime,
+  DashboardFailureByAgent,
+  DashboardFailureDaily,
+  DashboardRunTimeDaily,
+  DashboardUsageByAgent,
+  DashboardUsageDaily,
   InboxItem,
   Issue,
   IssueLabelsResponse,
@@ -58,6 +64,12 @@ import type {
   Workspace,
 } from "@multica/core/types";
 import {
+  DashboardAgentRunTimeListSchema,
+  DashboardFailureByAgentListSchema,
+  DashboardFailureDailyListSchema,
+  DashboardRunTimeDailyListSchema,
+  DashboardUsageByAgentListSchema,
+  DashboardUsageDailyListSchema,
   EMPTY_LIST_ISSUES_RESPONSE,
   EMPTY_TIMELINE_ENTRIES,
   IssueSchema,
@@ -85,6 +97,12 @@ import {
   EMPTY_CHAT_PENDING_TASK,
   EMPTY_CHAT_SESSION_LIST,
   EMPTY_COMMENT,
+  EMPTY_DASHBOARD_AGENT_RUN_TIME,
+  EMPTY_DASHBOARD_FAILURE_BY_AGENT,
+  EMPTY_DASHBOARD_FAILURE_DAILY,
+  EMPTY_DASHBOARD_RUN_TIME_DAILY,
+  EMPTY_DASHBOARD_USAGE_BY_AGENT,
+  EMPTY_DASHBOARD_USAGE_DAILY,
   EMPTY_INBOX_LIST,
   EMPTY_ISSUE_FALLBACK,
   EMPTY_LIST_LABELS_RESPONSE,
@@ -576,6 +594,144 @@ class ApiClient {
     });
   }
 
+  // --- Workspace dashboard (PRD §10.2 B-1) ---
+  //
+  // The 6 `/api/dashboard/*` endpoints are NOT online yet (server not
+  // scheduled + absent from the platform API-mirror allowlist → a real device
+  // gets 404). `probeDashboard` is the one-shot readiness gate; the typed
+  // getters below are the real surface M3's progress view and M2's reports
+  // consume once the server ships them. Response bodies are parsed with the
+  // core list schemas + empty fallbacks so a rollup that has no rows and a
+  // rollup that isn't online render identically (PRD §9.4 — never fake a 0).
+
+  // GET /api/dashboard/usage/daily — first dashboard endpoint used as the
+  // readiness probe. Response body is not consumed by UI: it only decides
+  // "endpoints up or down". A 404 throws ApiError, which the caller in
+  // data/queries/dashboard.ts catches and caches as "degraded" for the rest
+  // of the session.
+  async probeDashboard(opts?: { signal?: AbortSignal }): Promise<void> {
+    await this.fetch<void>("/api/dashboard/usage/daily", {
+      signal: opts?.signal,
+    });
+  }
+
+  /** Shared search-param builder for the dashboard rollups. Mirrors web's
+   *  `packages/core/api/client.ts:1729-1828`. `days` / `project_id` / `tz`
+   *  are all optional and omitted when unset so the server applies defaults. */
+  private dashboardParams(params: {
+    days?: number;
+    project_id?: string | null;
+    tz?: string;
+  }): string {
+    const search = new URLSearchParams();
+    if (params.days) search.set("days", String(params.days));
+    if (params.project_id) search.set("project_id", params.project_id);
+    if (params.tz) search.set("tz", params.tz);
+    return search.toString();
+  }
+
+  async getDashboardUsageDaily(
+    params: { days?: number; project_id?: string | null; tz?: string },
+    opts?: { signal?: AbortSignal },
+  ): Promise<DashboardUsageDaily[]> {
+    const qs = this.dashboardParams(params);
+    const raw = await this.fetch<unknown>(
+      `/api/dashboard/usage/daily${qs ? `?${qs}` : ""}`,
+      { signal: opts?.signal },
+    );
+    return parseWithFallback(
+      raw,
+      DashboardUsageDailyListSchema,
+      EMPTY_DASHBOARD_USAGE_DAILY,
+      { endpoint: "GET /api/dashboard/usage/daily" },
+    );
+  }
+
+  async getDashboardUsageByAgent(
+    params: { days?: number; project_id?: string | null; tz?: string },
+    opts?: { signal?: AbortSignal },
+  ): Promise<DashboardUsageByAgent[]> {
+    const qs = this.dashboardParams(params);
+    const raw = await this.fetch<unknown>(
+      `/api/dashboard/usage/by-agent${qs ? `?${qs}` : ""}`,
+      { signal: opts?.signal },
+    );
+    return parseWithFallback(
+      raw,
+      DashboardUsageByAgentListSchema,
+      EMPTY_DASHBOARD_USAGE_BY_AGENT,
+      { endpoint: "GET /api/dashboard/usage/by-agent" },
+    );
+  }
+
+  async getDashboardAgentRunTime(
+    params: { days?: number; project_id?: string | null; tz?: string },
+    opts?: { signal?: AbortSignal },
+  ): Promise<DashboardAgentRunTime[]> {
+    const qs = this.dashboardParams(params);
+    const raw = await this.fetch<unknown>(
+      `/api/dashboard/agent-runtime${qs ? `?${qs}` : ""}`,
+      { signal: opts?.signal },
+    );
+    return parseWithFallback(
+      raw,
+      DashboardAgentRunTimeListSchema,
+      EMPTY_DASHBOARD_AGENT_RUN_TIME,
+      { endpoint: "GET /api/dashboard/agent-runtime" },
+    );
+  }
+
+  async getDashboardRunTimeDaily(
+    params: { days?: number; project_id?: string | null; tz?: string },
+    opts?: { signal?: AbortSignal },
+  ): Promise<DashboardRunTimeDaily[]> {
+    const qs = this.dashboardParams(params);
+    const raw = await this.fetch<unknown>(
+      `/api/dashboard/runtime/daily${qs ? `?${qs}` : ""}`,
+      { signal: opts?.signal },
+    );
+    return parseWithFallback(
+      raw,
+      DashboardRunTimeDailyListSchema,
+      EMPTY_DASHBOARD_RUN_TIME_DAILY,
+      { endpoint: "GET /api/dashboard/runtime/daily" },
+    );
+  }
+
+  async getDashboardFailuresDaily(
+    params: { days?: number; project_id?: string | null; tz?: string },
+    opts?: { signal?: AbortSignal },
+  ): Promise<DashboardFailureDaily[]> {
+    const qs = this.dashboardParams(params);
+    const raw = await this.fetch<unknown>(
+      `/api/dashboard/failures/daily${qs ? `?${qs}` : ""}`,
+      { signal: opts?.signal },
+    );
+    return parseWithFallback(
+      raw,
+      DashboardFailureDailyListSchema,
+      EMPTY_DASHBOARD_FAILURE_DAILY,
+      { endpoint: "GET /api/dashboard/failures/daily" },
+    );
+  }
+
+  async getDashboardFailuresByAgent(
+    params: { days?: number; project_id?: string | null; tz?: string },
+    opts?: { signal?: AbortSignal },
+  ): Promise<DashboardFailureByAgent[]> {
+    const qs = this.dashboardParams(params);
+    const raw = await this.fetch<unknown>(
+      `/api/dashboard/failures/by-agent${qs ? `?${qs}` : ""}`,
+      { signal: opts?.signal },
+    );
+    return parseWithFallback(
+      raw,
+      DashboardFailureByAgentListSchema,
+      EMPTY_DASHBOARD_FAILURE_BY_AGENT,
+      { endpoint: "GET /api/dashboard/failures/by-agent" },
+    );
+  }
+
   // --- Issues ---
   async listIssues(
     params: ListIssuesParams = {},
@@ -585,11 +741,26 @@ class ApiClient {
     for (const [k, v] of Object.entries(params)) {
       if (v == null) continue;
       if (Array.isArray(v)) {
+        if (v.length === 0) continue;
         // Backend parses comma-separated lists (server/internal/handler/issue.go
         // uses strings.Split on a single query value). Match web's serialization
         // in packages/core/api/client.ts:407 — repeated keys would silently
         // collapse to the first value only.
-        if (v.length > 0) search.set(k, v.map(String).join(","));
+        //
+        // `assignee_filters` / `creator_filters` are arrays of actor refs
+        // `{ type, id }`; web serializes them as `type:id` joined by commas
+        // (packages/core/api/client.ts:721-722). The generic `String(v)` path
+        // would emit `[object Object]`, so they get their own serializer.
+        if (k === "assignee_filters" || k === "creator_filters") {
+          search.set(
+            k,
+            (v as { type: string; id: string }[])
+              .map((f) => `${f.type}:${f.id}`)
+              .join(","),
+          );
+          continue;
+        }
+        search.set(k, v.map(String).join(","));
       } else {
         search.set(k, String(v));
       }
