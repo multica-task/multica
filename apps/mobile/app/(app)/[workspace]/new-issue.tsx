@@ -22,7 +22,7 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import { SubmitIssueButton } from "@/components/issue/submit-issue-button";
 import { CreateFormAttributeRow } from "@/components/issue/create-form-attribute-row";
 import { MentionSuggestionBar } from "@/components/issue/mention-suggestion-bar";
@@ -45,14 +45,35 @@ export default function NewIssueModal() {
   const assignee = useNewIssueDraftStore((s) => s.assignee);
   const dueDate = useNewIssueDraftStore((s) => s.dueDate);
   const project = useNewIssueDraftStore((s) => s.project);
+  const setAssignee = useNewIssueDraftStore((s) => s.setAssignee);
   const resetDraft = useNewIssueDraftStore((s) => s.reset);
+
+  // Dispatch flow (staff-picker `?intent=dispatch`) hands the picked
+  // employee over via URL params — the draft store can't carry it across
+  // this transition because it's reset on mount below. Applied AFTER the
+  // reset so a fresh open (or an open with stale params) never keeps a
+  // previous selection. Only `agent` is produced today; the union check
+  // keeps the seed safe if a future caller passes member/squad.
+  const { assignee_type, assignee_id } = useLocalSearchParams<{
+    assignee_type?: string;
+    assignee_id?: string;
+  }>();
 
   useEffect(() => {
     resetDraft();
+    if (
+      (assignee_type === "member" ||
+        assignee_type === "agent" ||
+        assignee_type === "squad") &&
+      typeof assignee_id === "string" &&
+      assignee_id.length > 0
+    ) {
+      setAssignee({ type: assignee_type, id: assignee_id });
+    }
     return () => {
       resetDraft();
     };
-  }, [resetDraft]);
+  }, [resetDraft, setAssignee, assignee_type, assignee_id]);
 
   const createIssue = useCreateIssue();
   const isSubmitting = createIssue.isPending;
