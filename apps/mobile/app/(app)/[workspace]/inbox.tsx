@@ -1,4 +1,16 @@
-import { useMemo } from "react";
+/**
+ * Inbox screen — pushed route `/{slug}/inbox`.
+ *
+ * Moved out of the tab bar wholesale (M1-1, COD-29): logic is unchanged —
+ * the same dedup (`deduplicateInboxItems`), swipe-to-archive, batch menu
+ * and mark-read/archive mutations the screen had as a tab root. Entry
+ * points (home bell, quick-entry tile, mine page row) push this route.
+ *
+ * Header: title + back button come from the Stack registration in
+ * `[workspace]/_layout.tsx`; the batch-ops ellipsis and shared
+ * search/create actions render in the native header's `headerRight`.
+ */
+import { useCallback, useMemo } from "react";
 import {
   ActionSheetIOS,
   Alert,
@@ -6,13 +18,12 @@ import {
   View,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { Stack, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import type { InboxItem } from "@multica/core/types";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Header } from "@/components/ui/header";
 import { IconButton } from "@/components/ui/icon-button";
 import { HeaderActions } from "@/components/ui/app-header-actions";
 import { SwipeableInboxRow } from "@/components/inbox/swipeable-inbox-row";
@@ -75,7 +86,7 @@ export default function Inbox() {
   // (packages/views/inbox/components/inbox-page.tsx). "Mark all read" is
   // first (most common batch op); "Archive all" is destructive so it gets
   // the iOS red treatment + Alert confirm.
-  const onPressMenu = () => {
+  const onPressMenu = useCallback(() => {
     const options = [
       "Cancel",
       "Mark all read",
@@ -110,23 +121,29 @@ export default function Inbox() {
         }
       },
     );
-  };
+  }, [markAllRead, archiveAllRead, archiveCompleted, archiveAll]);
+
+  // Pushed-screen native header: title + back button come from the Stack
+  // registration in [workspace]/_layout.tsx; the batch-ops menu and the
+  // shared search/create actions live in headerRight. Same trailing actions
+  // the screen had as a tab root, just relocated to the native bar.
+  const headerRight = useCallback(
+    () => (
+      <>
+        <IconButton
+          name="ellipsis-horizontal"
+          onPress={onPressMenu}
+          accessibilityLabel="Inbox actions"
+        />
+        <HeaderActions />
+      </>
+    ),
+    [onPressMenu],
+  );
 
   return (
     <View className="flex-1 bg-background">
-      <Header
-        title="Inbox"
-        right={
-          <>
-            <IconButton
-              name="ellipsis-horizontal"
-              onPress={onPressMenu}
-              accessibilityLabel="Inbox actions"
-            />
-            <HeaderActions />
-          </>
-        }
-      />
+      <Stack.Screen options={{ headerRight }} />
       {isLoading ? (
         <InboxLoading />
       ) : error ? (

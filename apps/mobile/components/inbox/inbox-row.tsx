@@ -1,8 +1,9 @@
 /**
  * Inbox row content — the visual half, no gesture wrapping. Pulled out of
- * (tabs)/inbox.tsx so swipeable-inbox-row.tsx can wrap it with the gesture
- * recognizer without duplicating layout. Keep this file purely presentational
- * — the swipe and the press behaviour live in the wrapper.
+ * app/(app)/[workspace]/inbox.tsx so swipeable-inbox-row.tsx can wrap it
+ * with the gesture recognizer without duplicating layout. Keep this file
+ * purely presentational — the swipe and the press behaviour live in the
+ * wrapper.
  *
  * Visual structure mirrors web's InboxListItem
  * (packages/views/inbox/components/inbox-list-item.tsx). Per
