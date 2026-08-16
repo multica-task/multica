@@ -35,7 +35,7 @@ export function IssueDescription({
     return (
       <View className="px-4 pb-4">
         <Text className="text-sm text-muted-foreground italic">
-          No description.
+          暂无描述
         </Text>
       </View>
     );

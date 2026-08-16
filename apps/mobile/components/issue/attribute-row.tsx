@@ -38,11 +38,11 @@ import {
   PRIORITY_LABEL as PRIORITY_FULL_LABEL,
 } from "@/lib/issue-status";
 
-// Chip placeholder shortens `none` from "No priority" → "Priority" so the
+// Chip placeholder shortens `none` from "无优先级" → "优先级" so the
 // unset chip reads as a placeholder, not as a confusing assigned value.
 const PRIORITY_CHIP_LABEL: Record<IssuePriority, string> = {
   ...PRIORITY_FULL_LABEL,
-  none: "Priority",
+  none: "优先级",
 };
 
 /**
@@ -72,7 +72,7 @@ const ISSUE_PICKER_PATHNAMES = {
 // with the viewer's offset. Mirrors web's formatDate in list-row/board-card.
 function formatDueDate(iso: string | null): string | null {
   if (!iso) return null;
-  return formatDateOnly(iso, { month: "short", day: "numeric" }, "en-US") || null;
+  return formatDateOnly(iso, { month: "short", day: "numeric" }, "zh-CN") || null;
 }
 
 export function AttributeRow({ issue }: { issue: Issue }) {
@@ -137,7 +137,7 @@ export function AttributeRow({ issue }: { issue: Issue }) {
               showPresence
             />
           }
-          label={assigneeName ?? "Unknown"}
+          label={assigneeName ?? "未知"}
           variant="filled"
           onPress={() => openPicker("assignee")}
         />
@@ -146,7 +146,7 @@ export function AttributeRow({ issue }: { issue: Issue }) {
           icon={
             <View className="size-4 rounded-full border border-dashed border-muted-foreground/40" />
           }
-          label="Assignee"
+          label="负责人"
           variant="dimmed"
           onPress={() => openPicker("assignee")}
         />
@@ -173,7 +173,7 @@ export function AttributeRow({ issue }: { issue: Issue }) {
       {labels.length === 0 ? (
         <AttributeChip
           icon={<Text className="text-xs text-muted-foreground/70">◯</Text>}
-          label="Label"
+          label="标签"
           variant="dimmed"
           onPress={() => openPicker("label")}
         />
@@ -192,7 +192,7 @@ export function AttributeRow({ issue }: { issue: Issue }) {
           icon={
             <View className="size-3.5 rounded-sm border border-dashed border-muted-foreground/40" />
           }
-          label="Project"
+          label="项目"
           variant="dimmed"
           onPress={() => openPicker("project")}
         />
@@ -201,7 +201,7 @@ export function AttributeRow({ issue }: { issue: Issue }) {
       {/* Due date */}
       <AttributeChip
         icon={<Text className="text-xs text-muted-foreground/80">📅</Text>}
-        label={dueLabel ?? "Due date"}
+        label={dueLabel ?? "截止日期"}
         variant={dueLabel ? "filled" : "dimmed"}
         onPress={() => openPicker("due-date")}
       />

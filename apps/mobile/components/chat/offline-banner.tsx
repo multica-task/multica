@@ -30,7 +30,7 @@ interface Props {
 
 export function OfflineBanner({ agentName, availability }: Props) {
   if (availability !== "offline" && availability !== "unstable") return null;
-  const name = agentName?.trim() || "This agent";
+  const name = agentName?.trim() || "这个数字员工";
 
   if (availability === "unstable") {
     return (
@@ -40,7 +40,7 @@ export function OfflineBanner({ agentName, availability }: Props) {
           className="flex-1 text-xs text-warning"
           numberOfLines={1}
         >
-          {name} may have just disconnected — your message will queue.
+          {name} 刚刚掉线了——你的消息会被排队发送。
         </Text>
       </View>
     );
@@ -53,7 +53,7 @@ export function OfflineBanner({ agentName, availability }: Props) {
         className="flex-1 text-xs text-muted-foreground"
         numberOfLines={1}
       >
-        {name} is offline. Messages will wait until its runtime is back.
+        {name} 当前离线。消息会等待其工位恢复后发送。
       </Text>
     </View>
   );

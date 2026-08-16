@@ -31,20 +31,23 @@ export const PROJECT_PRIORITIES: ProjectPriority[] = [
   "none",
 ];
 
+// Display copy is Chinese per PRD §9.5. Project status/priority labels match
+// web zh-Hans (packages/views/locales/zh-Hans/projects.json); only display
+// values change, keys stay untouched.
 export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
-  planned: "Planned",
-  in_progress: "In Progress",
-  paused: "Paused",
-  completed: "Completed",
-  cancelled: "Cancelled",
+  planned: "计划中",
+  in_progress: "进行中",
+  paused: "已暂停",
+  completed: "已完成",
+  cancelled: "已取消",
 };
 
 export const PROJECT_PRIORITY_LABEL: Record<ProjectPriority, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  none: "No priority",
+  urgent: "紧急",
+  high: "高",
+  medium: "中",
+  low: "低",
+  none: "无优先级",
 };
 
 // Single hex per status, used by the SVG status icon (NativeWind classes

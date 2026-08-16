@@ -65,11 +65,11 @@ export function ProjectRelatedIssues({ projectId }: Props) {
     return (
       <View className="px-4 py-6 gap-3">
         <Text className="text-sm text-destructive">
-          Failed to load issues:{" "}
-          {error instanceof Error ? error.message : "unknown error"}
+          无法加载事项：{" "}
+          {error instanceof Error ? error.message : "未知错误"}
         </Text>
         <Button variant="outline" onPress={() => refetch()}>
-          <Text>Retry</Text>
+          <Text>重试</Text>
         </Button>
       </View>
     );
@@ -78,7 +78,7 @@ export function ProjectRelatedIssues({ projectId }: Props) {
   if ((data?.length ?? 0) === 0) {
     return (
       <View className="px-4 py-6">
-        <Text className="text-sm text-muted-foreground">No issues yet.</Text>
+        <Text className="text-sm text-muted-foreground">暂无事项。</Text>
       </View>
     );
   }

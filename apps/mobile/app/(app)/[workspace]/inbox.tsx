@@ -133,7 +133,7 @@ export default function Inbox() {
         <IconButton
           name="ellipsis-horizontal"
           onPress={onPressMenu}
-          accessibilityLabel="Inbox actions"
+          accessibilityLabel="收件箱操作"
         />
         <HeaderActions />
       </>
@@ -149,11 +149,11 @@ export default function Inbox() {
       ) : error ? (
         <View className="px-4 gap-3 pt-4">
           <Text className="text-sm text-destructive">
-            Failed to load inbox:{" "}
-            {error instanceof Error ? error.message : "unknown error"}
+            无法加载收件箱：{" "}
+            {error instanceof Error ? error.message : "未知错误"}
           </Text>
           <Button variant="outline" onPress={() => refetch()}>
-            <Text>Retry</Text>
+            <Text>重试</Text>
           </Button>
         </View>
       ) : !data || data.length === 0 ? (
@@ -205,11 +205,10 @@ function InboxEmpty({ iconColor }: { iconColor: string }) {
     <View className="flex-1 items-center justify-center px-8 gap-3">
       <Ionicons name="mail-open-outline" size={42} color={iconColor} />
       <Text className="text-base font-medium text-foreground text-center">
-        Inbox zero
+        收件箱为空
       </Text>
       <Text className="text-sm text-muted-foreground text-center">
-        When someone @mentions you, assigns an issue, or an agent finishes a
-        task, it shows up here.
+        当有人 @提及你、给你指派事项，或数字员工完成任务时，会显示在这里。
       </Text>
     </View>
   );
