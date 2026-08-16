@@ -810,8 +810,9 @@ export type { Label, Project, ProjectResource };
 
 // ─────────────────────────────────────────────────────────────────────
 // 行业简报（PRD §10.2 B-2 契约）。
-// 本期数据源为 mock（`data/mocks/briefs.ts` + `USE_MOCK_BRIEFS`）；schema
-// 与最终接口契约字段一致，接口上线后只改数据源，类型与组件零改动。
+// 无后端 MVP 阶段数据源为每日 JSON 链路（`data/briefs/daily-source.ts`，
+// 远程 / 缓存 / MOCK_BRIEFS 兜底）；schema 与最终接口契约字段一致，
+// B-2 上线后只改数据源，类型与组件零改动。
 export const BriefSchema = z.object({
   id: z.string(),
   workspace_id: z.string().default(""),

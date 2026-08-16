@@ -1,15 +1,15 @@
 /**
- * Home ④ 行业简报 — B 类 mock 数据（PRD §4.6，M2 落地）。
+ * Home ④ 行业简报 — 每日 JSON 数据（COD-55 无后端 MVP，App 接入侧）。
  *
- * 必做范围：首页最多 3 条 + 「示例数据」徽标 + 点击进详情。列表页 / 分类
- * 筛选 / 已读持久化 / 实时全部后置（等 B-2 对接）。
+ * 必做范围：首页最多 3 条 + 来源徽标（「每日更新」/「示例数据」）+ 点击进详情。
+ * 列表页 / 分类筛选 / 已读持久化 / 实时全部后置（等 B-2 对接）。
  *
  * 行结构（§4.6 首页区块）：分类 chip + 标题（2 行截断）+ 来源 · 相对时间；
  * `relevance: "high"` 的条目标题左侧加品牌色竖条。已读态：点击后标题从加粗
  * 变常规（内存态，冷启动重置可接受）。
  *
- * 「更多 ›」入口本期隐藏（列表页后置）。空态（mock 数组为空）：「暂无简报」+
- * 副文案。徽标由 `USE_MOCK_BRIEFS` 同源驱动（`ExampleDataBadge`）。
+ * 「更多 ›」入口本期隐藏（列表页后置）。空态（列表为空）：「暂无简报」+ 副文案。
+ * 徽标由数据源驱动（`ExampleDataBadge`，`BriefListResult.source`）。
  *
  * 6 态（§9.4）：Loading=2 行骨架 / Empty=空态 / Error=单行 + 重试 /
  * Offline=缓存渲染 / Refreshing=父级下拉刷新 / Partial 不适用。
@@ -36,14 +36,17 @@ export function BriefList() {
   // 已读态：内存 Set<id>，冷启动重置可接受（§4.6）。点击详情后置位。
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set());
 
-  const rows = useMemo(() => (data ?? []).slice(0, MAX_ROWS), [data]);
+  const rows = useMemo(() => (data?.items ?? []).slice(0, MAX_ROWS), [data]);
+  // Loading/error 分支里 `data` 会被 React Query 收窄为 undefined，徽标来源提前
+  // 求值：加载态先默认「每日更新」，链路回退到 mock 时再切换为「示例数据」。
+  const source = data?.source ?? "daily";
 
   if (isLoading) {
     return (
       <Card className="mx-4 mt-4 gap-3">
         <View className="flex-row items-center justify-between">
           <Text className="text-base font-semibold text-foreground">行业简报</Text>
-          <ExampleDataBadge />
+          <ExampleDataBadge source={source} />
         </View>
         <Skeleton className="h-12 w-full rounded-sm" />
         <Skeleton className="h-12 w-full rounded-sm" />
@@ -56,7 +59,7 @@ export function BriefList() {
       <Card className="mx-4 mt-4 gap-2">
         <View className="flex-row items-center justify-between">
           <Text className="text-base font-semibold text-foreground">行业简报</Text>
-          <ExampleDataBadge />
+          <ExampleDataBadge source={source} />
         </View>
         <View className="flex-row items-center justify-between">
           <Text className="text-sm text-destructive">简报加载失败</Text>
@@ -75,14 +78,14 @@ export function BriefList() {
     <Card className="mx-4 mt-4 gap-1">
       <View className="flex-row items-center justify-between">
         <Text className="text-base font-semibold text-foreground">行业简报</Text>
-        <ExampleDataBadge />
+        <ExampleDataBadge source={source} />
       </View>
 
       {rows.length === 0 ? (
         <View className="py-6 items-center gap-1">
-          <Text className="text-sm text-muted-foreground">暂无简报</Text>
+          <Text className="text-sm text-muted-foreground">今日暂无简报</Text>
           <Text className="text-xs text-muted-foreground/70">
-            接入后每日推送与你项目相关的行业动态
+            每日 07:00 更新，稍后再来看看
           </Text>
         </View>
       ) : (

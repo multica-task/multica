@@ -1,16 +1,17 @@
 /**
  * 简报详情页 `/{slug}/brief/[id]`（PRD §3.2 新增路由 + §4.6 必做，M2-5 落地）。
  *
- * 只读阅读：分类 chip + 「示例数据」徽标 + 标题 + 来源 · 相对时间 + Markdown
- * 正文（复用 `lib/markdown` 现有混合渲染管线，不新写渲染器）+ 来源链接。
+ * 只读阅读：分类 chip + 来源徽标（「每日更新」/「示例数据」）+ 标题 +
+ * 来源 · 相对时间 + Markdown 正文（复用 `lib/markdown` 现有混合渲染管线，
+ * 不新写渲染器）+ 来源链接。
  *
  * - 「分享」走 `Share.share`（§4.6）。
  * - 「让数字员工深挖这条」（可选增强，M2-7）：→ `/{slug}/staff-picker?intent=dispatch`
  *   选员工 → `new-issue` 预填标题 `调研：{简报标题}`、描述（摘要 + 来源 +
  *   `> 来自行业简报` 引用块）、assignee 为所选员工 —— 创建的是真实 issue。
  *
- * 数据：mock（`USE_MOCK_BRIEFS`）。`briefDetailOptions` 单条查询；找不到
- * （id 不在 mock 数组）→ 空态。
+ * 数据：每日 JSON 链路（COD-55，`briefDetailOptions` 单条查询，`BriefDetailResult`）。
+ * 找不到（id 不在当前简报列表）→ 空态。
  *
  * 6 态（§9.4）：Loading=骨架 / Empty=「简报不存在」+ 返回 / Error=单行 + 重试 /
  * Offline=缓存渲染 / Refreshing 不适用（详情页）/ Partial 不适用。
@@ -38,7 +39,10 @@ export default function BriefDetailPage() {
     briefDetailOptions(wsId, id ?? ""),
   );
 
-  const brief = useMemo(() => (data && data.id ? data : null), [data]);
+  const brief = useMemo(
+    () => (data?.brief && data.brief.id ? data.brief : null),
+    [data],
+  );
 
   const onShare = () => {
     if (!brief) return;
@@ -119,10 +123,10 @@ export default function BriefDetailPage() {
       className="flex-1 bg-background"
       contentContainerClassName="px-4 py-4 pb-8"
     >
-      {/* 分类 + 示例数据徽标 */}
+      {/* 分类 + 来源徽标 */}
       <View className="flex-row items-center gap-2">
         <Text className="text-xs font-medium text-brand">{brief.category}</Text>
-        <ExampleDataBadge />
+        <ExampleDataBadge source={data?.source ?? "daily"} />
       </View>
 
       <Text className="mt-2 text-2xl font-semibold leading-8 text-foreground">
