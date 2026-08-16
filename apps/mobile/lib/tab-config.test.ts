@@ -22,7 +22,7 @@ describe("tab-config", () => {
       "board",
       "voice",
       "chat",
-      "more",
+      "mine",
     ]);
   });
 

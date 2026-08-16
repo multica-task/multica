@@ -328,6 +328,16 @@ export default function WorkspaceLayout() {
           name="more/agents"
           options={{ title: "Agents", headerBackTitle: "Back" }}
         />
+        {/* M1-6 新增：报告 / 秘书设置占位屏（PRD §8.3），M2-3 / M2-6 落地前
+            供我的页入口落位，避免死链。 */}
+        <Stack.Screen
+          name="reports"
+          options={{ title: "数据报告", headerBackTitle: "返回" }}
+        />
+        <Stack.Screen
+          name="more/settings/assistant"
+          options={{ title: "秘书设置", headerBackTitle: "返回" }}
+        />
         <Stack.Screen
           name="more/pins"
           options={{ title: "Pinned", headerBackTitle: "Back" }}
