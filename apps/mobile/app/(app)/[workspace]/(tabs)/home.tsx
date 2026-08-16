@@ -30,6 +30,7 @@ import { QuickActions } from "@/components/home/quick-actions";
 import { ReportCard } from "@/components/home/report-card";
 import { TodoList } from "@/components/home/todo-list";
 import { BriefList } from "@/components/home/brief-list";
+import { BlockingNoticeBar } from "@/components/shared/blocking-notice-bar";
 
 export default function HomeScreen() {
   const wsId = useWorkspaceStore((s) => s.currentWorkspaceId);
@@ -53,6 +54,8 @@ export default function HomeScreen() {
   return (
     <View className="flex-1 bg-background">
       <HomeHeader />
+      {/* 阻断提示条（PRD §7.2）：首页复用，零新增请求。 */}
+      <BlockingNoticeBar />
       <ScrollView
         className="flex-1"
         contentContainerClassName="pb-10"

@@ -10,6 +10,7 @@ import { useIssuesRealtime } from "@/data/realtime/use-issues-realtime";
 import { useMyIssuesRealtime } from "@/data/realtime/use-my-issues-realtime";
 import { useBoardRealtime } from "@/data/realtime/use-board-realtime";
 import { useChatSessionsRealtime } from "@/data/realtime/use-chat-sessions-realtime";
+import { useStaffRealtime } from "@/data/realtime/use-staff-realtime";
 import { useProjectsRealtime } from "@/data/realtime/use-projects-realtime";
 import { usePinsRealtime } from "@/data/realtime/use-pins-realtime";
 import { usePresenceRealtime } from "@/data/realtime/use-presence-realtime";
@@ -81,6 +82,9 @@ function RealtimeSubscriptions() {
   useMyIssuesRealtime();
   useBoardRealtime();
   useChatSessionsRealtime();
+  // M4-9：员工 rail / 名册的 agent:* patch 实时。未读点由 chat:done /
+  // chat:session_read invalidate 驱动（useChatSessionsRealtime 已处理）。
+  useStaffRealtime();
   useProjectsRealtime();
   usePinsRealtime();
   // Presence: warm the three queries up front so avatars don't flash a
@@ -341,6 +345,16 @@ export default function WorkspaceLayout() {
         <Stack.Screen
           name="more/agents"
           options={{ title: "数字员工", headerBackTitle: "返回" }}
+        />
+        {/* 数字员工名册 / 档案（M4-5 / M4-6）。more/agents 删除 + 重定向
+            （M4-11）：`/more/agents` 路由保留但重定向到 /staff。 */}
+        <Stack.Screen
+          name="staff"
+          options={{ title: "数字员工", headerBackTitle: "Back" }}
+        />
+        <Stack.Screen
+          name="staff/[id]"
+          options={{ title: "员工档案", headerBackTitle: "Back" }}
         />
         {/* M1-6 新增：报告 / 秘书设置占位屏（PRD §8.3），M2-3 / M2-6 落地前
             供我的页入口落位，避免死链。 */}

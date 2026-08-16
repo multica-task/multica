@@ -131,9 +131,9 @@ export default function TabsLayout() {
           }}
         />
         {/* 工作台 — 会话未读 badge 保持不变（countUnreadChatMessages）。
-            文件名 M4 才改 workbench.tsx。 */}
+            文件名 M4-1 由 chat.tsx 重命名为 workbench.tsx。 */}
         <Tabs.Screen
-          name="chat"
+          name="workbench"
           options={{
             title: TAB_TITLES.chat,
             tabBarBadge: TAB_BADGES.chat ? chatBadge : undefined,

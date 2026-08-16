@@ -12,7 +12,9 @@
 import { z } from "zod";
 import type {
   Agent,
+  AgentActivityBucket,
   AgentInvocationTarget,
+  AgentRunCount,
   AgentTask,
   Attachment,
   ChatMessage,
@@ -456,6 +458,39 @@ export const EMPTY_AGENT_TASK_LIST: AgentTask[] = [];
 export const EMPTY_ACTIVE_TASKS_RESPONSE: ActiveTasksResponse = { tasks: [] };
 
 // =====================================================
+// B-9 · 30 天统计端点（PRD §7.6 KPI 口径）
+// =====================================================
+// 档案 KPI 四格的唯一数据源 —— 禁止用 agent-task-snapshot 补算累计绩效
+// （PRD §7.6「KPI 口径改版」）。两条端点在 core 已登记（packages/core/api/
+// client.ts:1958-1965），移动端是否镜像由真机可达性决定：未镜像 / 404 /
+// 权限不足时 KPI 格显示 `——`（StatPlaceholder），绝不显示假 0。
+//
+//   GET /api/agent-activity-30d → AgentActivityBucket[]
+//     agent_id / bucket_at（UTC 当日零点）/ task_count / failed_count
+//   GET /api/agent-run-counts   → AgentRunCount[]
+//     agent_id / run_count
+export const AgentActivityBucketSchema: z.ZodType<AgentActivityBucket> =
+  z.object({
+    agent_id: z.string(),
+    bucket_at: z.string().default(""),
+    task_count: z.number().default(0),
+    failed_count: z.number().default(0),
+  }).loose();
+
+export const AgentRunCountSchema: z.ZodType<AgentRunCount> = z.object({
+  agent_id: z.string(),
+  run_count: z.number().default(0),
+}).loose();
+
+export const AgentActivity30dListSchema = z
+  .array(AgentActivityBucketSchema)
+  .default([]);
+export const AgentRunCountListSchema = z.array(AgentRunCountSchema).default([]);
+
+export const EMPTY_AGENT_ACTIVITY_30D: AgentActivityBucket[] = [];
+export const EMPTY_AGENT_RUN_COUNTS: AgentRunCount[] = [];
+
+// =====================================================
 // User / Workspace / Inbox / Member / Agent
 // =====================================================
 // Mobile reads these on every cold start (auth → workspaces → inbox → members
@@ -623,12 +658,27 @@ export const AgentSchema: z.ZodType<Agent> = z.object({
   // dedicated /env endpoint and we don't expose env editing on mobile.
   has_custom_env: z.boolean().optional(),
   custom_env_key_count: z.number().optional(),
+  // MUL-2764 / MUL-3869 (PRD §7.5 工具计数): MCP server config + Composio
+  // toolkit allowlist. Both are owner/privileged data — the backend strips
+  // the value and sets `*_redacted=true` when the caller may not see
+  // secrets. Mobile mirrors the core contract exactly (packages/core/types/
+  // agent.ts:483-509): `undefined` on a legacy backend = "unknown — assume
+  // none", redacted=true = "configured but hidden", never a fake 0 count.
+  mcp_config: z.unknown().nullable().optional(),
+  mcp_config_redacted: z.boolean().optional(),
+  composio_toolkit_allowlist: z.array(z.string()).optional(),
+  composio_toolkit_allowlist_redacted: z.boolean().optional(),
   visibility: z.string().catch("workspace") as unknown as z.ZodType<
     Agent["visibility"]
   >,
   permission_mode: z.enum(["private", "public_to"]).catch("private"),
   invocation_targets: z.array(AgentInvocationTargetSchema).default([]),
-  status: z.string().catch("active") as unknown as z.ZodType<Agent["status"]>,
+  // Enum drift defense: `AgentStatus` is idle/working/blocked/error/offline
+  // (server-maintained via ReconcileAgentStatus). Unknown values fall back
+  // to "idle" so the staff rail's status dot keeps rendering.
+  status: z
+    .enum(["idle", "working", "blocked", "error", "offline"])
+    .catch("idle") as unknown as z.ZodType<Agent["status"]>,
   max_concurrent_tasks: z.number().default(1),
   model: z.string().default(""),
   owner_id: z.string().nullable().default(null),
