@@ -79,6 +79,8 @@ import {
   EMPTY_AGENT_LIST,
   EMPTY_AGENT_TASK_LIST,
   EMPTY_ATTACHMENT_LIST,
+  EMPTY_BRIEF,
+  EMPTY_BRIEF_LIST,
   EMPTY_CHAT_MESSAGE_LIST,
   EMPTY_CHAT_PENDING_TASK,
   EMPTY_CHAT_SESSION_LIST,
@@ -98,6 +100,8 @@ import {
   EMPTY_SQUAD_LIST,
   EMPTY_USER,
   EMPTY_WORKSPACE_LIST,
+  BriefListSchema,
+  BriefSchema,
   InboxListSchema,
   NotificationPreferenceResponseSchema,
   ListLabelsResponseSchema,
@@ -117,6 +121,7 @@ import {
   UserSchema,
   WorkspaceListSchema,
 } from "./schemas";
+import type { Brief } from "./schemas";
 import type { ZodType } from "zod";
 import { getCurrentSlug } from "./workspace-store";
 import { parseWithFallback } from "@/lib/parse-response";
@@ -447,6 +452,30 @@ class ApiClient {
     });
     return parseWithFallback(raw, InboxListSchema, EMPTY_INBOX_LIST, {
       endpoint: "listInbox",
+    });
+  }
+
+  // GET /api/briefs — 行业简报（PRD §10.2 B-2 契约）。本期数据源为 mock
+  // （`USE_MOCK_BRIEFS=true`，`data/mocks/briefs.ts`），本方法只在开关改
+  // `false`、后端上线后才会被调用；契约字段与 BriefSchema 一致。
+  async listBriefs(opts?: { signal?: AbortSignal }): Promise<Brief[]> {
+    const raw = await this.fetch<unknown>("/api/briefs", {
+      signal: opts?.signal,
+    });
+    return parseWithFallback(raw, BriefListSchema, EMPTY_BRIEF_LIST, {
+      endpoint: "listBriefs",
+    });
+  }
+
+  async getBrief(
+    id: string,
+    opts?: { signal?: AbortSignal },
+  ): Promise<Brief> {
+    const raw = await this.fetch<unknown>(`/api/briefs/${id}`, {
+      signal: opts?.signal,
+    });
+    return parseWithFallback(raw, BriefSchema, EMPTY_BRIEF, {
+      endpoint: "getBrief",
     });
   }
 

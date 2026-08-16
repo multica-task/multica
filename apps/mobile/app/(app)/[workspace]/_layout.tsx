@@ -17,6 +17,8 @@ import { ModalCloseButton } from "@/components/ui/modal-close-button";
 import { useNewIssueDraftResetOnWorkspaceChange } from "@/data/stores/new-issue-draft-store";
 import { useNewProjectDraftResetOnWorkspaceChange } from "@/data/stores/new-project-draft-store";
 import { useChatSessionPickerResetOnWorkspaceChange } from "@/data/stores/chat-session-picker-store";
+import { useHomeViewResetOnWorkspaceChange } from "@/data/stores/home-view-store";
+import { useAssistantStoreResetOnWorkspaceChange } from "@/data/stores/assistant-store";
 
 /**
  * Shared Stack.Screen options for every iOS formSheet-presented sheet route.
@@ -118,6 +120,8 @@ export default function WorkspaceLayout() {
   useNewIssueDraftResetOnWorkspaceChange(matched?.id ?? null);
   useNewProjectDraftResetOnWorkspaceChange(matched?.id ?? null);
   useChatSessionPickerResetOnWorkspaceChange(matched?.id ?? null);
+  useHomeViewResetOnWorkspaceChange(matched?.id ?? null);
+  useAssistantStoreResetOnWorkspaceChange(matched?.id ?? null);
 
   // Wait for the workspaces list before deciding membership — otherwise a
   // valid deep link would briefly redirect away on cold start.
@@ -343,6 +347,12 @@ export default function WorkspaceLayout() {
         <Stack.Screen
           name="more/settings/assistant"
           options={{ title: "秘书设置", headerBackTitle: "返回" }}
+        />
+        {/* 简报详情（PRD §3.2 新增路由，M2-5）。标题由页面正文渲染，Stack 只给
+            back；屏内自带「示例数据」徽标与分享。 */}
+        <Stack.Screen
+          name="brief/[id]"
+          options={{ title: "行业简报", headerBackTitle: "返回" }}
         />
         <Stack.Screen
           name="more/pins"

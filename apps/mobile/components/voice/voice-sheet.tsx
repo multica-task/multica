@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { PrototypeBadge } from "@/components/voice/prototype-badge";
 import { useWorkspaceStore } from "@/data/workspace-store";
+import { useAssistantStore, type VoiceDefaultEntry } from "@/data/stores/assistant-store";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { THEME } from "@/lib/theme";
 
@@ -33,17 +34,22 @@ interface VoiceSheetItem {
   path: string;
   /** 录音 / 翻译 are prototypes and carry the gray badge; 发语音 doesn't. */
   prototype?: boolean;
+  /** 对应 assistant-store 的 `voiceDefaultEntry`（PRD §8.4），默认项高亮。 */
+  defaultEntry: VoiceDefaultEntry;
 }
 
 const SHEET_ITEMS: VoiceSheetItem[] = [
-  { label: "录音", icon: "record.circle", path: "/voice-record", prototype: true },
-  { label: "翻译", icon: "character.bubble", path: "/voice-translate", prototype: true },
-  { label: "发语音", icon: "waveform.and.mic", path: "/voice-talk" },
+  { label: "录音", icon: "record.circle", path: "/voice-record", prototype: true, defaultEntry: "record" },
+  { label: "翻译", icon: "character.bubble", path: "/voice-translate", prototype: true, defaultEntry: "translate" },
+  { label: "发语音", icon: "waveform.and.mic", path: "/voice-talk", defaultEntry: "voice" },
 ];
 
 export function VoiceSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const slug = useWorkspaceStore((s) => s.currentWorkspaceSlug);
+  const voiceDefaultEntry = useAssistantStore(
+    (s) => s.voicePrefs.voiceDefaultEntry,
+  );
   const { colorScheme } = useColorScheme();
   const t = THEME[colorScheme];
 
@@ -74,7 +80,11 @@ export function VoiceSheet({ visible, onClose }: Props) {
                   ) : null}
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={item.label}
+                    accessibilityLabel={
+                      item.defaultEntry === voiceDefaultEntry
+                        ? `${item.label}（默认）`
+                        : item.label
+                    }
                     onPress={() => {
                       onClose();
                       if (slug) router.push(`/${slug}${item.path}`);
@@ -86,8 +96,18 @@ export function VoiceSheet({ visible, onClose }: Props) {
                       tintColor={t.foreground}
                       style={{ width: 20, height: 20 }}
                     />
-                    <Text className="text-base text-foreground">{item.label}</Text>
-                    {item.prototype ? (
+                    <Text
+                      className={`text-base ${
+                        item.defaultEntry === voiceDefaultEntry
+                          ? "text-brand font-medium"
+                          : "text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </Text>
+                    {item.defaultEntry === voiceDefaultEntry ? (
+                      <Text className="ml-auto text-brand text-xs">默认</Text>
+                    ) : item.prototype ? (
                       <View className="ml-auto">
                         <PrototypeBadge />
                       </View>

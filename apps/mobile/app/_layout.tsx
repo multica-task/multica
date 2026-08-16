@@ -13,6 +13,7 @@ import { api } from "@/data/api";
 import { queryClient } from "@/data/query-client";
 import { useAuthStore } from "@/data/auth-store";
 import { useWorkspaceStore } from "@/data/workspace-store";
+import { useAssistantStore } from "@/data/stores/assistant-store";
 import { LightboxProvider, prewarmHighlighter } from "@/lib/markdown";
 import { NAV_THEME } from "@/lib/theme";
 import { useColorScheme } from "@/lib/use-color-scheme";
@@ -52,6 +53,9 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
       },
     });
     initialize();
+    // 秘书设置（默认员工 / 语音偏好）SecureStore 读取 —— 与 auth 无关，
+    // 但要在任何使用 `defaultAgentIds` 的屏（秘书设置 / 录音长按）之前就绪。
+    void useAssistantStore.getState().hydrate();
   }, [initialize, qc]);
 
   return <>{children}</>;

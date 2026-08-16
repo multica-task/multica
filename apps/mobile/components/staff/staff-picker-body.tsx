@@ -45,9 +45,11 @@ const AVATAR_SIZE = 36;
 interface Props {
   query: string;
   onSelect: (agent: Agent) => void;
+  /** 列表底部附加内容（如 `?intent=default` 的「清除默认员工」）。 */
+  footer?: React.ReactElement | null;
 }
 
-export function StaffPickerBody({ query, onSelect }: Props) {
+export function StaffPickerBody({ query, onSelect, footer }: Props) {
   const wsId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const userId = useAuthStore((s) => s.user?.id);
   const {
@@ -125,6 +127,7 @@ export function StaffPickerBody({ query, onSelect }: Props) {
           <Text className="text-sm text-muted-foreground">无匹配的员工</Text>
         </View>
       }
+      ListFooterComponent={footer}
     />
   );
 }
